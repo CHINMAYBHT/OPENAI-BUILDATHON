@@ -1,0 +1,25 @@
+{
+  "name": "job-helper-database",
+  "version": "1.0.0",
+  "description": "Database configuration and utilities for Job Helper application",
+  "main": "connection.js",
+  "type": "module",
+  "scripts": {
+    "test-connection": "node test-connection.js",
+    "seed": "node seedData.js",
+    "test-users": "node testUsers.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.3.1",
+    "mongoose": "^8.0.3"
+  },
+  "keywords": [
+    "mongodb",
+    "mongoose",
+    "database",
+    "job-helper"
+  ],
+  "author": "",
+  "license": "ISC"
+}
