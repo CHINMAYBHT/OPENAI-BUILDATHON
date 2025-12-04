@@ -59,7 +59,7 @@ function CodeEditor() {
 
   // AI Chatbot states
   const [showChat, setShowChat] = useState(false);
-  const [chatPosition, setChatPosition] = useState(() =>  s({
+  const [chatPosition, setChatPosition] = useState(() =>  ({
     x: window.innerWidth - 400, // Position from right edge
     y: 100
   }));

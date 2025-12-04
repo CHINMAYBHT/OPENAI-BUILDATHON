@@ -1,9 +1,9 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faArrowLeft, 
-  faSearch, 
+import {
+  faArrowLeft,
+  faSearch,
   faFilter,
   faCode,
   faClock,
@@ -41,7 +41,7 @@ function CompanyQuestions() {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [sortOrder, setSortOrder] = useState('asc');
-  
+
   const filterRef = useRef(null);
   const sortRef = useRef(null);
 
@@ -56,7 +56,7 @@ function CompanyQuestions() {
 
   // Get company data from service
   const currentCompany = companyService.getCompanyById(companyName) || companyService.getCompanyById('amazon');
-  
+
   // Get questions for this company from service  
   const questionsData = companyService.getQuestionsByCompany(companyName);
 
@@ -76,12 +76,12 @@ function CompanyQuestions() {
   const filteredAndSortedQuestions = useMemo(() => {
     let filtered = questionsData.filter(question => {
       const matchesSearch = question.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          question.description.toLowerCase().includes(searchTerm.toLowerCase());
+        question.description.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesDifficulty = selectedDifficulty === 'all' || question.difficulty === selectedDifficulty;
       const matchesTopic = selectedTopic === 'all' || question.topic === selectedTopic;
       const matchesStatus = selectedStatus === 'all' || question.status === selectedStatus;
       const matchesCompany = question.companies.includes(companyName);
-      
+
       return matchesSearch && matchesDifficulty && matchesTopic && matchesStatus && matchesCompany;
     });
 
@@ -102,7 +102,7 @@ function CompanyQuestions() {
   }, [searchTerm, selectedDifficulty, selectedTopic, selectedStatus, sortBy, companyName]);
 
   const getDifficultyColor = (difficulty) => {
-    switch(difficulty) {
+    switch (difficulty) {
       case 'easy': return 'text-green-600';
       case 'medium': return 'text-yellow-600';
       case 'hard': return 'text-red-600';
@@ -111,7 +111,7 @@ function CompanyQuestions() {
   };
 
   const getStatusIcon = (status) => {
-    switch(status) {
+    switch (status) {
       case 'solved': return <FontAwesomeIcon icon={faCheckCircle} className="text-green-500" />;
       case 'attempted': return <FontAwesomeIcon icon={faTimesCircle} className="text-yellow-500" />;
       default: return <div className="w-4 h-4 border-2 border-gray-300 rounded-full"></div>;
@@ -176,30 +176,30 @@ function CompanyQuestions() {
             <div className="flex items-center">
               <span className="text-lg font-bold text-gray-800">Job Builder</span>
             </div>
-            
+
             {/* Right side navigation */}
             <div className="flex items-center space-x-6">
               {/* Home Button */}
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-gray-100"
               >
                 <FontAwesomeIcon icon={faHome} />
                 <span>Home</span>
               </Link>
-              
+
               {/* Companies Button */}
-              <Link 
-                to="/coding/companies" 
+              <Link
+                to="/coding/companies"
                 className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-gray-100"
               >
                 <FontAwesomeIcon icon={faBuilding} />
                 <span>Companies</span>
               </Link>
-              
+
               {/* User Profile Icon */}
-              <Link 
-                to="/coding/profile" 
+              <Link
+                to="/coding/profile"
                 className="p-3 rounded-lg bg-blue-100 hover:bg-blue-200 transition-colors"
               >
                 <FontAwesomeIcon icon={faUser} className="text-blue-600" />
@@ -212,7 +212,7 @@ function CompanyQuestions() {
       {/* Main Content */}
       <main className="pt-24 pb-16 px-6 sm:px-8 lg:px-12">
         <div className="w-full">
-          
+
           {/* Header */}
           <div className="mb-8">
             <div className="flex justify-between items-start mb-6">
@@ -224,12 +224,13 @@ function CompanyQuestions() {
                   Practice from {currentCompany.totalQuestions} coding questions frequently asked at {currentCompany.name}
                 </p>
               </div>
-              
+
               {/* Add Button */}
-              <button className="flex items-center space-x-2 px-4 py-2 mt-5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-all">
-                <FontAwesomeIcon icon={faPlus} />
-                <span>Add to Sheets</span>
-              </button>
+              <button className="px-3 py-2 mt-5 bg-blue-500 hover:bg-blue-600 text-white rounded-full font-medium transition-all">
+                <FontAwesomeIcon
+                  icon={faBookmark}
+                />           
+                </button>
             </div>
           </div>
 
@@ -307,10 +308,10 @@ function CompanyQuestions() {
                     className="bg-white text-gray-900 placeholder-gray-500 pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none w-96"
                   />
                 </div>
-                
+
                 {/* Sort icon with dropdown */}
                 <div className="relative" ref={sortRef}>
-                  <button 
+                  <button
                     onClick={() => {
                       setShowSortDropdown(!showSortDropdown);
                       if (showFilterDropdown) setShowFilterDropdown(false);
@@ -318,11 +319,11 @@ function CompanyQuestions() {
                     className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex flex-col items-center">
-                      <FontAwesomeIcon icon={faArrowUp} className="text-gray-600" style={{fontSize: '8px'}} />
-                      <FontAwesomeIcon icon={faArrowDown} className="text-gray-600" style={{fontSize: '8px'}} />
+                      <FontAwesomeIcon icon={faArrowUp} className="text-gray-600" style={{ fontSize: '8px' }} />
+                      <FontAwesomeIcon icon={faArrowDown} className="text-gray-600" style={{ fontSize: '8px' }} />
                     </div>
                   </button>
-                  
+
                   {/* Sort Dropdown Menu */}
                   {showSortDropdown && (
                     <div className="absolute left-0 top-12 bg-white border border-gray-200 rounded-lg shadow-lg py-2 w-48 z-10 transform transition-all duration-200 ease-out opacity-100 scale-100 animate-in">
@@ -341,15 +342,14 @@ function CompanyQuestions() {
                               setSortBy(option.value);
                               setShowSortDropdown(false);
                             }}
-                            className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${
-                              sortBy === option.value ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
-                            }`}
+                            className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${sortBy === option.value ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+                              }`}
                           >
                             {option.label}
                           </button>
                         ))}
                       </div>
-                      
+
                       {/* Sort Order */}
                       <div className="border-t border-gray-200 my-2"></div>
                       <div className="px-4 py-2">
@@ -359,9 +359,8 @@ function CompanyQuestions() {
                             setSortOrder('asc');
                             setShowSortDropdown(false);
                           }}
-                          className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${
-                            sortOrder === 'asc' ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
-                          }`}
+                          className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${sortOrder === 'asc' ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+                            }`}
                         >
                           Ascending
                         </button>
@@ -370,14 +369,13 @@ function CompanyQuestions() {
                             setSortOrder('desc');
                             setShowSortDropdown(false);
                           }}
-                          className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${
-                            sortOrder === 'desc' ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
-                          }`}
+                          className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${sortOrder === 'desc' ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+                            }`}
                         >
                           Descending
                         </button>
                       </div>
-                      
+
                       {/* Clear Sort */}
                       <div className="border-t border-gray-200 my-2"></div>
                       <div className="px-4 py-2">
@@ -394,10 +392,10 @@ function CompanyQuestions() {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Filter icon with dropdown */}
                 <div className="relative" ref={filterRef}>
-                  <button 
+                  <button
                     onClick={() => {
                       setShowFilterDropdown(!showFilterDropdown);
                       if (showSortDropdown) setShowSortDropdown(false);
@@ -406,7 +404,7 @@ function CompanyQuestions() {
                   >
                     <HiFilter className="text-gray-600 text-lg" style={{ stroke: 'currentColor', fill: 'transparent', strokeWidth: 1.5 }} />
                   </button>
-                  
+
                   {/* Dropdown Menu */}
                   {showFilterDropdown && (
                     <div className="absolute left-0 top-12 bg-white border border-gray-200 rounded-lg shadow-lg py-2 w-48 z-10 transform transition-all duration-200 ease-out opacity-100 scale-100 animate-in">
@@ -420,15 +418,14 @@ function CompanyQuestions() {
                               setSelectedDifficulty(difficulty);
                               setShowFilterDropdown(false);
                             }}
-                            className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${
-                              selectedDifficulty === difficulty ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
-                            }`}
+                            className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${selectedDifficulty === difficulty ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+                              }`}
                           >
                             {difficulty === 'all' ? 'All Difficulties' : difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
                           </button>
                         ))}
                       </div>
-                      
+
                       {/* Topics Section */}
                       <div className="border-t border-gray-200 my-2"></div>
                       <div className="px-4 py-2">
@@ -441,16 +438,15 @@ function CompanyQuestions() {
                                 setSelectedTopic(topic);
                                 setShowFilterDropdown(false);
                               }}
-                              className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${
-                                selectedTopic === topic ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
-                              }`}
+                              className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${selectedTopic === topic ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+                                }`}
                             >
                               {topic === 'all' ? 'All Topics' : topic}
                             </button>
                           ))}
                         </div>
                       </div>
-                      
+
                       {/* Status Section */}
                       <div className="border-t border-gray-200 my-2"></div>
                       <div className="px-4 py-2">
@@ -462,15 +458,14 @@ function CompanyQuestions() {
                               setSelectedStatus(status);
                               setShowFilterDropdown(false);
                             }}
-                            className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${
-                              selectedStatus === status ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
-                            }`}
+                            className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${selectedStatus === status ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+                              }`}
                           >
                             {status === 'all' ? 'All Status' : status.charAt(0).toUpperCase() + status.slice(1)}
                           </button>
                         ))}
                       </div>
-                      
+
                       {/* Clear Filters */}
                       <div className="border-t border-gray-200 my-2"></div>
                       <div className="px-4 py-2">
@@ -497,7 +492,7 @@ function CompanyQuestions() {
               </div>
             </div>
           </div>
-            
+
           {/* Questions List */}
           <div className="overflow-hidden">
             <div className="overflow-x-auto">
@@ -527,7 +522,7 @@ function CompanyQuestions() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <Link 
+                        <Link
                           to={`/coding/problem/${question.id}`}
                           className="text-sm font-medium text-gray-900 hover:text-blue-600 transition-colors cursor-pointer"
                         >
@@ -564,7 +559,7 @@ function CompanyQuestions() {
                 </tbody>
               </table>
             </div>
-            
+
             {filteredAndSortedQuestions.length === 0 && (
               <div className="text-center py-12">
                 <div className="text-gray-500 text-lg">No questions found matching your criteria</div>
@@ -579,7 +574,7 @@ function CompanyQuestions() {
           </div>
         </div>
       </main>
-     </div>    
+    </div>
   );
 }
 

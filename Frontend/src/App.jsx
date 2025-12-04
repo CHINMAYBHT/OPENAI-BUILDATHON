@@ -39,12 +39,28 @@ function App() {
       setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
-    
-    // Check login status
+
+    // Check initial login status
     const user = localStorage.getItem('user');
     setIsLoggedIn(!!user);
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        if (session?.user) {
+          localStorage.setItem('user', JSON.stringify(session.user));
+          setIsLoggedIn(true);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        localStorage.removeItem('user');
+        setIsLoggedIn(false);
+      }
+    });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleLogout = async () => {

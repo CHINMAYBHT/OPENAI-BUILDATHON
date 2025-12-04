@@ -292,7 +292,7 @@ function Login() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-blue-50">
       {/* Main Container */}
       <div className="moving-border-container rounded-3xl shadow-right-only max-w-5xl w-full relative">
-        <div className="relative min-h-[500px] bg-white rounded-[calc(1.5rem-4px)] overflow-hidden">
+        <div className="relative min-h-[600px] bg-white rounded-[calc(1.5rem-4px)] overflow-hidden">
           
           {/* Illustration Panel - Smoothly Sliding */}
           <div className={`absolute inset-y-0 w-1/2 bg-blue-600 p-12 flex items-center justify-center z-10 transition-transform duration-1000 ease-in-out ${
