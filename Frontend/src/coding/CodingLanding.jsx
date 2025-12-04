@@ -38,21 +38,21 @@ function CodingLanding() {
       color: 'green',
       link: '/coding/profile'
     },
-    {
-      icon: faListCheck,
-      title: 'Coding Sheets',
-      description: 'Popular curated sheets like Arrays 50, Linked List 50, DP 50, and more structured learning paths.',
-      color: 'orange',
-      link: '/coding/sheets',
-      buttonText: 'Explore Sheets'
-    },
-    {
-      icon: faBullseye,
-      title: 'Role-based Recommendations',
-      description: 'Choose your job role and target company to get a personalized problem set tailored for you.',
-      color: 'pink',
-      link: '/coding/recommendations'
-    },
+    // {
+    //   icon: faListCheck,
+    //   title: 'Coding Sheets',
+    //   description: 'Popular curated sheets like Arrays 50, Linked List 50, DP 50, and more structured learning paths.',
+    //   color: 'orange',
+    //   link: '/coding/sheets',
+    //   buttonText: 'Explore Sheets'
+    // },
+    // {
+    //   icon: faBullseye,
+    //   title: 'Role-based Recommendations',
+    //   description: 'Choose your job role and target company to get a personalized problem set tailored for you.',
+    //   color: 'pink',
+    //   link: '/coding/recommendations'
+    // },
     {
       icon: faClock,
       title: 'Mock Coding Tests',

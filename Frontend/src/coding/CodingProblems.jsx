@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faUser, 
@@ -29,6 +29,7 @@ function CodingProblems() {
   
   const sortRef = useRef(null);
   const filterRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -304,15 +305,18 @@ function CodingProblems() {
           {/* Practice Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {/* Top Trending 50 Card */}
-            <div className="relative bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden">
+            <div
+              className="relative bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden"
+              onClick={() => navigate('/coding/sheet/top-trending-50')}
+            >
               <div className="absolute top-4 right-4 bg-purple-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
                 HOT
               </div>
               <div className="absolute -top-4 -right-4 w-16 h-16 bg-purple-200 rounded-full opacity-50"></div>
               <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-pink-200 rounded-full opacity-30"></div>
               <div className="relative z-10">
-                <h3 className="text-xl font-bold text-gray-800 mb-2">Top Trending 50</h3>
-                <p className="text-gray-600 mb-4">Most popular interview questions</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-2 drop-shadow-sm">Top Trending 50</h3>
+                <p className="text-gray-700 mb-4">Most popular interview questions</p>
                 <button className="bg-gray-800 text-white px-6 py-2 rounded-lg hover:bg-gray-900 transition-colors font-medium">
                   Start Practice
                 </button>
@@ -320,31 +324,37 @@ function CodingProblems() {
             </div>
 
             {/* Top 30 Frequently Asked Card */}
-            <div className="relative bg-gradient-to-br from-orange-100 to-red-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden">
+            <div
+              className="relative bg-gradient-to-br from-orange-100 to-red-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden"
+              onClick={() => navigate('/coding/sheet/top-30-frequently-asked')}
+            >
               <div className="absolute top-4 right-4 bg-orange-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
                 POPULAR
               </div>
               <div className="absolute -top-4 -right-4 w-16 h-16 bg-orange-200 rounded-full opacity-50"></div>
               <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-red-200 rounded-full opacity-30"></div>
               <div className="relative z-10">
-                <h3 className="text-xl font-bold text-gray-800 mb-2">Top 30 Frequently Asked</h3>
-                <p className="text-gray-600 mb-4">Essential coding interview prep</p>
-                <button className="bg-white text-gray-800 border border-gray-800 px-6 py-2 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                <h3 className="text-xl font-bold text-gray-900 mb-2 drop-shadow-sm">Top 30 Frequently Asked</h3>
+                <p className="text-gray-700 mb-4">Essential coding interview prep</p>
+                <button className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors font-medium">
                   Start Learning
                 </button>
               </div>
             </div>
 
             {/* Trees Card */}
-            <div className="relative bg-gradient-to-br from-green-100 to-teal-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden">
+            <div
+              className="relative bg-gradient-to-br from-green-100 to-teal-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden"
+              onClick={() => navigate('/coding/sheet/trees')}
+            >
               <div className="absolute top-4 right-4 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
                 DSA
               </div>
               <div className="absolute -top-4 -right-4 w-16 h-16 bg-green-200 rounded-full opacity-50"></div>
               <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-teal-200 rounded-full opacity-30"></div>
               <div className="relative z-10">
-                <h3 className="text-xl font-bold text-gray-800 mb-2">Trees</h3>
-                <p className="text-gray-600 mb-4">Binary trees, BST, and more</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-2 drop-shadow-sm">Trees</h3>
+                <p className="text-gray-700 mb-4">Binary trees, BST, and more</p>
                 <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium">
                   Explore Trees
                 </button>
@@ -352,15 +362,18 @@ function CodingProblems() {
             </div>
 
             {/* Arrays Card */}
-            <div className="relative bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden">
+            <div
+              className="relative bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden"
+              onClick={() => navigate('/coding/sheet/arrays')}
+            >
               <div className="absolute top-4 right-4 bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
                 BASIC
               </div>
               <div className="absolute -top-4 -right-4 w-16 h-16 bg-blue-200 rounded-full opacity-50"></div>
               <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-cyan-200 rounded-full opacity-30"></div>
               <div className="relative z-10">
-                <h3 className="text-xl font-bold text-gray-800 mb-2">Arrays</h3>
-                <p className="text-gray-600 mb-4">Fundamental array operations</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-2 drop-shadow-sm">Arrays</h3>
+                <p className="text-gray-700 mb-4">Fundamental array operations</p>
                 <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
                   Learn Arrays
                 </button>
@@ -368,15 +381,18 @@ function CodingProblems() {
             </div>
 
             {/* Graphs Card */}
-            <div className="relative bg-gradient-to-br from-yellow-100 to-orange-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden">
+            <div
+              className="relative bg-gradient-to-br from-yellow-100 to-orange-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden"
+              onClick={() => navigate('/coding/sheet/graphs')}
+            >
               <div className="absolute top-4 right-4 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
                 ADVANCED
               </div>
               <div className="absolute -top-4 -right-4 w-16 h-16 bg-yellow-200 rounded-full opacity-50"></div>
               <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-orange-200 rounded-full opacity-30"></div>
               <div className="relative z-10">
-                <h3 className="text-xl font-bold text-gray-800 mb-2">Graphs</h3>
-                <p className="text-gray-600 mb-4">DFS, BFS, shortest paths</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-2 drop-shadow-sm">Graphs</h3>
+                <p className="text-gray-700 mb-4">DFS, BFS, shortest paths</p>
                 <button className="bg-yellow-600 text-white px-6 py-2 rounded-lg hover:bg-yellow-700 transition-colors font-medium">
                   Master Graphs
                 </button>
@@ -384,15 +400,18 @@ function CodingProblems() {
             </div>
 
             {/* Dynamic Programming Card */}
-            <div className="relative bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden">
+            <div
+              className="relative bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden"
+              onClick={() => navigate('/coding/sheet/dynamic-programming')}
+            >
               <div className="absolute top-4 right-4 bg-indigo-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
                 EXPERT
               </div>
               <div className="absolute -top-4 -right-4 w-16 h-16 bg-indigo-200 rounded-full opacity-50"></div>
               <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-purple-200 rounded-full opacity-30"></div>
               <div className="relative z-10">
-                <h3 className="text-xl font-bold text-gray-800 mb-2">Dynamic Programming</h3>
-                <p className="text-gray-600 mb-4">Optimization problems solved</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-2 drop-shadow-sm">Dynamic Programming</h3>
+                <p className="text-gray-700 mb-4">Optimization problems solved</p>
                 <button className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
                   Challenge DP
                 </button>
@@ -610,7 +629,7 @@ function CodingProblems() {
                 </thead>
                 <tbody className="bg-transparent">
                   {sortedProblems.map((problem) => (
-                    <tr key={problem.id} className="hover:bg-gray-50 transition-colors cursor-pointer">
+                    <tr key={problem.id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => navigate(`/coding/problem/${problem.id}`)}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {problem.id}
                       </td>
@@ -621,13 +640,8 @@ function CodingProblems() {
                           <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Link 
-                          to={`/coding/problem/${problem.id}`}
-                          className="text-sm font-medium text-gray-900 hover:text-blue-600 transition-colors cursor-pointer"
-                        >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {problem.title}
-                        </Link>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`text-sm font-semibold ${getDifficultyColor(problem.difficulty)}`}>

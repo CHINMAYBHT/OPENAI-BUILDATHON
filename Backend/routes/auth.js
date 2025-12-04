@@ -1,5 +1,6 @@
 import express from 'express';
-import { createUser, authenticateUser } from '../../Database/queries/userQueries.js';
+import { createUser, authenticateUser } from '../../Database/supabaseAuth.js';
+import supabase from '../../Database/supabaseClient.js';
 
 const router = express.Router();
 
@@ -18,6 +19,24 @@ router.post('/signup', async (req, res) => {
     const result = await createUser({ name, email, password });
 
     if (result.success) {
+      // Create profile in the profiles table
+      try {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: result.user.id,
+            full_name: name,
+          });
+
+        if (profileError) {
+          console.error('Profile creation failed:', profileError);
+          // Don't fail the entire signup if profile creation fails
+        }
+      } catch (profileError) {
+        console.error('Profile creation error:', profileError);
+        // Don't fail the entire signup if profile creation fails
+      }
+
       res.status(201).json(result);
     } else {
       res.status(400).json(result);

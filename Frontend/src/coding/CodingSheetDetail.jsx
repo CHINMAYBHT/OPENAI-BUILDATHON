@@ -98,36 +98,151 @@ function CodingSheetDetail() {
       color: "from-yellow-500 to-orange-500",
       totalProblems: 50,
       solvedCount: 30
+    },
+    // New sheets for practice cards
+    "top-trending-50": {
+      title: "Top Trending 50",
+      subtitle: "Most Popular Interview Questions",
+      description: "Top 50 most trending coding questions asked in interviews",
+      color: "from-purple-500 to-purple-500",
+      totalProblems: 50,
+      solvedCount: 15
+    },
+    "top-30-frequently-asked": {
+      title: "Top 30 Frequently Asked",
+      subtitle: "Essential Coding Interview Prep",
+      description: "The most frequently asked coding problems in technical interviews",
+      color: "from-orange-500 to-orange-400",
+      totalProblems: 30,
+      solvedCount: 8
+    },
+    "trees": {
+      title: "Trees",
+      subtitle: "Binary Trees, BST, and More",
+      description: "Master tree data structures and algorithms",
+      color: "from-green-400 to-green-500",
+      totalProblems: 25,
+      solvedCount: 6
+    },
+    "arrays": {
+      title: "Arrays",
+      subtitle: "Fundamental Array Operations",
+      description: "Master array manipulation and algorithms",
+      color: "from-blue-400 to-blue-500",
+      totalProblems: 30,
+      solvedCount: 12
+    },
+    "graphs": {
+      title: "Graphs",
+      subtitle: "DFS, BFS, Shortest Paths",
+      description: "Graph algorithms and data structures",
+      color: "from-yellow-500 to-orange-400",
+      totalProblems: 25,
+      solvedCount: 3
+    },
+    "dynamic-programming": {
+      title: "Dynamic Programming",
+      subtitle: "Optimization Problems Solved",
+      description: "Master dynamic programming techniques",
+      color: "from-indigo-400 to-indigo-500",
+      totalProblems: 20,
+      solvedCount: 2
     }
   };
 
   // Sample problems data
   const allProblems = [
-    { id: 1, title: "Two Sum", difficulty: "Easy", solved: true, sheetIds: [1, 2, 5] },
+    // Existing problems for numbered sheets
+    { id: 1, title: "Two Sum", difficulty: "Easy", solved: true, sheetIds: [1, 2, 5, "arrays"] },
     { id: 2, title: "Add Two Numbers", difficulty: "Medium", solved: false, sheetIds: [2, 7] },
     { id: 3, title: "Longest Substring Without Repeating Characters", difficulty: "Medium", solved: true, sheetIds: [1, 2, 6] },
     { id: 4, title: "Median of Two Sorted Arrays", difficulty: "Hard", solved: false, sheetIds: [2, 3] },
     { id: 5, title: "Longest Palindromic Substring", difficulty: "Medium", solved: true, sheetIds: [1, 2, 6] },
     { id: 6, title: "ZigZag Conversion", difficulty: "Medium", solved: false, sheetIds: [2, 6] },
-    { id: 7, title: "Reverse Integer", difficulty: "Medium", solved: true, sheetIds: [1, 5] },
-    { id: 8, title: "String to Integer (atoi)", difficulty: "Medium", solved: false, sheetIds: [2, 6] },
-    { id: 9, title: "Palindrome Number", difficulty: "Easy", solved: true, sheetIds: [1, 5] },
-    { id: 10, title: "Regular Expression Matching", difficulty: "Hard", solved: false, sheetIds: [2] },
-    { id: 11, title: "Container With Most Water", difficulty: "Medium", solved: true, sheetIds: [1, 2, 5] },
+    { id: 7, title: "Reverse Integer", difficulty: "Medium", solved: true, sheetIds: [1, 5, "top-trending-50"] },
+    { id: 8, title: "String to Integer (atoi)", difficulty: "Medium", solved: false, sheetIds: [2, 6, "top-30-frequently-asked"] },
+    { id: 9, title: "Palindrome Number", difficulty: "Easy", solved: true, sheetIds: [1, 5, "top-trending-50"] },
+    { id: 10, title: "Regular Expression Matching", difficulty: "Hard", solved: false, sheetIds: [2, "dynamic-programming"] },
+    { id: 11, title: "Container With Most Water", difficulty: "Medium", solved: true, sheetIds: [1, 2, 5, "arrays"] },
     { id: 12, title: "Integer to Roman", difficulty: "Medium", solved: true, sheetIds: [2] },
-    { id: 13, title: "Roman to Integer", difficulty: "Easy", solved: true, sheetIds: [1, 2] },
+    { id: 13, title: "Roman to Integer", difficulty: "Easy", solved: true, sheetIds: [1, 2, "top-30-frequently-asked"] },
     { id: 14, title: "Longest Common Prefix", difficulty: "Easy", solved: true, sheetIds: [1, 2, 6] },
-    { id: 15, title: "3Sum", difficulty: "Medium", solved: false, sheetIds: [1, 2, 5] },
+    { id: 15, title: "3Sum", difficulty: "Medium", solved: false, sheetIds: [1, 2, 5, "arrays"] },
     { id: 16, title: "3Sum Closest", difficulty: "Medium", solved: true, sheetIds: [2, 5] },
     { id: 17, title: "Letter Combinations", difficulty: "Medium", solved: false, sheetIds: [2] },
     { id: 18, title: "4Sum", difficulty: "Medium", solved: true, sheetIds: [2, 5] },
     { id: 19, title: "Remove Nth Node", difficulty: "Medium", solved: false, sheetIds: [2, 7] },
-    { id: 20, title: "Valid Parentheses", difficulty: "Easy", solved: true, sheetIds: [1, 2] },
+    { id: 20, title: "Valid Parentheses", difficulty: "Easy", solved: true, sheetIds: [1, 2, "top-trending-50"] },
+
+    // Top Trending 50 problems (new set)
+    { id: 101, title: "Merge Two Sorted Lists", difficulty: "Easy", solved: false, sheetIds: ["top-trending-50"] },
+    { id: 102, title: "Climbing Stairs", difficulty: "Easy", solved: true, sheetIds: ["top-trending-50", "dynamic-programming"] },
+    { id: 103, title: "Maximum Subarray", difficulty: "Medium", solved: false, sheetIds: ["top-trending-50", "arrays"] },
+    { id: 104, title: "Merge Intervals", difficulty: "Medium", solved: true, sheetIds: ["top-trending-50", "arrays"] },
+    { id: 105, title: "Rotate Image", difficulty: "Medium", solved: false, sheetIds: ["top-trending-50", "arrays"] },
+    { id: 106, title: "Set Matrix Zeroes", difficulty: "Medium", solved: false, sheetIds: ["top-trending-50", "arrays"] },
+    { id: 107, title: "Spiral Matrix", difficulty: "Medium", solved: true, sheetIds: ["top-trending-50", "arrays"] },
+    { id: 108, title: "Jump Game", difficulty: "Medium", solved: false, sheetIds: ["top-trending-50", "dynamic-programming"] },
+    { id: 109, title: "Search a 2D Matrix", difficulty: "Medium", solved: true, sheetIds: ["top-trending-50", "arrays"] },
+    { id: 110, title: "Insert Interval", difficulty: "Medium", solved: false, sheetIds: ["top-trending-50", "arrays"] },
+
+    // Top 30 Frequently Asked problems
+    { id: 201, title: "Valid Parentheses", difficulty: "Easy", solved: true, sheetIds: ["top-30-frequently-asked"] },
+    { id: 202, title: "Merge Two Sorted Lists", difficulty: "Easy", solved: false, sheetIds: ["top-30-frequently-asked"] },
+    { id: 203, title: "Maximum Depth of Binary Tree", difficulty: "Easy", solved: false, sheetIds: ["top-30-frequently-asked", "trees"] },
+    { id: 204, title: "Same Tree", difficulty: "Easy", solved: true, sheetIds: ["top-30-frequently-asked", "trees"] },
+    { id: 205, title: "Invert Binary Tree", difficulty: "Easy", solved: false, sheetIds: ["top-30-frequently-asked", "trees"] },
+    { id: 206, title: "Subtree of Another Tree", difficulty: "Easy", solved: true, sheetIds: ["top-30-frequently-asked", "trees"] },
+    { id: 207, title: "Two Sum II - Input Array Is Sorted", difficulty: "Medium", solved: false, sheetIds: ["top-30-frequently-asked", "arrays"] },
+
+    // Trees problems
+    { id: 301, title: "Maximum Depth of Binary Tree", difficulty: "Easy", solved: false, sheetIds: ["trees"] },
+    { id: 302, title: "Same Tree", difficulty: "Easy", solved: true, sheetIds: ["trees"] },
+    { id: 303, title: "Invert Binary Tree", difficulty: "Easy", solved: false, sheetIds: ["trees"] },
+    { id: 304, title: "Subtree of Another Tree", difficulty: "Easy", solved: true, sheetIds: ["trees"] },
+    { id: 305, title: "Lowest Common Ancestor", difficulty: "Medium", solved: false, sheetIds: ["trees"] },
+    { id: 306, title: "Binary Tree Maximum Path Sum", difficulty: "Hard", solved: false, sheetIds: ["trees"] },
+    { id: 307, title: "Balanced Binary Tree", difficulty: "Easy", solved: true, sheetIds: ["trees"] },
+    { id: 308, title: "Diameter of Binary Tree", difficulty: "Easy", solved: false, sheetIds: ["trees"] },
+    { id: 309, title: "Validate Binary Search Tree", difficulty: "Medium", solved: false, sheetIds: ["trees"] },
+    { id: 310, title: "Binary Tree Inorder Traversal", difficulty: "Easy", solved: true, sheetIds: ["trees"] },
+
+    // Arrays problems
+    { id: 401, title: "Find Pivot Index", difficulty: "Easy", solved: false, sheetIds: ["arrays"] },
+    { id: 402, title: "Two Sum II - Input Array Is Sorted", difficulty: "Medium", solved: true, sheetIds: ["arrays"] },
+    { id: 403, title: "Subarray Sum Equals K", difficulty: "Medium", solved: false, sheetIds: ["arrays"] },
+    { id: 404, title: "Insert Interval", difficulty: "Medium", solved: false, sheetIds: ["arrays"] },
+    { id: 405, title: "Merge Intervals", difficulty: "Medium", solved: true, sheetIds: ["arrays"] },
+    { id: 406, title: "Search Insert Position", difficulty: "Easy", solved: true, sheetIds: ["arrays"] },
+    { id: 407, title: "Search a 2D Matrix", difficulty: "Medium", solved: false, sheetIds: ["arrays"] },
+    { id: 408, title: "Container With Most Water", difficulty: "Medium", solved: true, sheetIds: ["arrays"] },
+    { id: 409, title: "3Sum", difficulty: "Medium", solved: false, sheetIds: ["arrays"] },
+
+    // Graphs problems
+    { id: 501, title: "Graph Valid Tree", difficulty: "Medium", solved: false, sheetIds: ["graphs"] },
+    { id: 502, title: "Number of Islands", difficulty: "Medium", solved: true, sheetIds: ["graphs"] },
+    { id: 503, title: "Clone Graph", difficulty: "Medium", solved: false, sheetIds: ["graphs"] },
+    { id: 504, title: "Course Schedule", difficulty: "Medium", solved: false, sheetIds: ["graphs"] },
+    { id: 505, title: "Course Schedule II", difficulty: "Medium", solved: true, sheetIds: ["graphs"] },
+    { id: 506, title: "Surrounded Regions", difficulty: "Medium", solved: false, sheetIds: ["graphs"] },
+    { id: 507, title: "Pacific Atlantic Water Flow", difficulty: "Medium", solved: true, sheetIds: ["graphs"] },
+
+    // Dynamic Programming problems
+    { id: 601, title: "Climbing Stairs", difficulty: "Easy", solved: true, sheetIds: ["dynamic-programming"] },
+    { id: 602, title: "House Robber", difficulty: "Medium", solved: false, sheetIds: ["dynamic-programming"] },
+    { id: 603, title: "House Robber II", difficulty: "Medium", solved: false, sheetIds: ["dynamic-programming"] },
+    { id: 604, title: "Jump Game", difficulty: "Medium", solved: true, sheetIds: ["dynamic-programming"] },
+    { id: 605, title: "Jump Game II", difficulty: "Medium", solved: false, sheetIds: ["dynamic-programming"] },
+    { id: 606, title: "Unique Paths", difficulty: "Medium", solved: false, sheetIds: ["dynamic-programming"] },
+    { id: 607, title: "Unique Paths II", difficulty: "Medium", solved: true, sheetIds: ["dynamic-programming"] },
+    { id: 608, title: "Longest Palindromic Substring", difficulty: "Medium", solved: false, sheetIds: ["dynamic-programming"] }
   ];
 
   const sheet = sheetsData[sheetId] || sheetsData[1];
-  const sheetProblems = allProblems.filter(p => 
-    p.sheetIds.includes(parseInt(sheetId))
+  const sheetProblems = allProblems.filter(p =>
+    p.sheetIds.includes(sheetId) ||
+    p.sheetIds.includes(parseInt(sheetId)) ||
+    p.sheetIds.includes(Number(sheetId))
   );
 
   const getDifficultyColor = (difficulty) => {

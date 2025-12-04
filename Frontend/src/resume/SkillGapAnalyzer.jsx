@@ -48,7 +48,7 @@ function SkillGapAnalyzer() {
           })),
           projects: (gapAnalysis.recommendations?.projects || []).map((project, idx) => ({
             title: project,
-            skills: 'React, Node.js, MongoDB',
+            skills: 'React, Node.js, PostgreSQL',
             difficulty: idx % 2 === 0 ? 'Intermediate' : 'Advanced'
           }))
         },

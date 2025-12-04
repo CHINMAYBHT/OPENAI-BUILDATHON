@@ -1,18 +1,10 @@
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-
-// Load environment variables from .env
-dotenv.config({ path: '../.env' });
+// Database/connection.js
+// Supabase connection placeholder (no actual DB connection needed)
+import supabase from './supabaseClient.js';
 
 export const connectDB = async () => {
-  try {
-    const conn = await mongoose.connect(process.env.MONGO_URI);
-    console.log('✅ MongoDB Connected Successfully!');
-    return true;
-  } catch (error) {
-    console.error('❌ MongoDB Connection Failed:', error.message);
-    return false;
-  }
+  console.log('Supabase client initialized');
+  return true;
 };
 
 export default { connectDB };

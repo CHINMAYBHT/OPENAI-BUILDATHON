@@ -216,39 +216,83 @@ function CodingSheets() {
     const solvedProblems = progressMap[sheet.id] || 0;
     const progressPercentage = Math.round((solvedProblems / sheet.totalProblems) * 100);
 
+    // Get badge color based on progress
+    const getBadgeColor = () => {
+      if (progressPercentage === 0) return 'bg-gray-500 text-white';
+      if (progressPercentage < 100) return 'bg-blue-500 text-white';
+      return 'bg-green-500 text-white';
+    };
+
+    // Get badge text based on progress
+    const getBadgeText = () => {
+      if (progressPercentage === 0) return 'NEW';
+      if (progressPercentage < 100) return 'IN PROGRESS';
+      return 'COMPLETED';
+    };
+
+    // Get button styling based on sheet type
+    const getButtonStyle = () => {
+      switch(sheet.id) {
+        case 2: // Top 30 Frequently Asked
+          return "bg-white text-gray-800 border border-gray-800 px-6 py-2 rounded-lg hover:bg-gray-50 transition-colors font-medium";
+        case 3: // Trees
+          return "bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium";
+        case 4: // Arrays
+          return "bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium";
+        case 9: // Graphs
+          return "bg-yellow-600 text-white px-6 py-2 rounded-lg hover:bg-yellow-700 transition-colors font-medium";
+        case 10: // DP
+          return "bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium";
+        default: // Default for others
+          return "bg-gray-800 text-white px-6 py-2 rounded-lg hover:bg-gray-900 transition-colors font-medium";
+      }
+    };
+
+    // Get button text based on progress
+    const getButtonText = () => {
+      if (progressPercentage === 0) return "Start Learning";
+      if (progressPercentage < 100) return "Continue Learning";
+      return "Review Progress";
+    };
+
     return (
       <Link
         to={`/coding/sheet/${sheet.id}`}
-        className={`group bg-gradient-to-br ${sheet.color} rounded-xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer min-w-max flex flex-col justify-between text-white`}
-        style={{ width: '280px' }}
+        className="relative bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden"
       >
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="text-2xl">
-              <FontAwesomeIcon icon={sheet.icon} className="text-white" />
-            </div>
-            <h3 className="text-lg font-bold text-white">
-              {sheet.title}
-            </h3>
+        <div className={`absolute top-4 right-4 text-xs px-2 py-1 rounded-full font-semibold ${getBadgeColor()}`}>
+          {getBadgeText()}
+        </div>
+        <div className={`absolute -top-4 -right-4 w-16 h-16 ${sheet.color.split(' ')[0].replace('from-', 'bg-')} rounded-full opacity-5`}></div>
+        <div className={`absolute -bottom-6 -left-6 w-20 h-20 ${sheet.color.split(' ')[0].replace('from-', 'bg-')} rounded-full opacity-3`}></div>
+
+        <div className="relative z-10">
+          <div className={`text-4xl mb-4 group-hover:scale-110 transition-transform duration-300 ${sheet.color.split(' ')[0].replace('from-', 'text-')}`}>
+            <FontAwesomeIcon icon={sheet.icon} />
           </div>
-          
+          <h3 className="text-xl font-bold text-gray-800 mb-2">{sheet.title}</h3>
+          <p className="text-gray-600 text-sm mb-4">{sheet.subtitle}</p>
+
           {/* Progress Bar */}
-          <div className="mb-2">
-            <div className="bg-white/30 rounded-full h-2 overflow-hidden">
-              <div 
-                className="bg-white h-full rounded-full transition-all duration-500"
+          <div className="mb-3">
+            <div className="bg-gray-200 rounded-full h-2 overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${sheet.color.split(' ')[0].replace('from-', 'bg-')}`}
                 style={{ width: `${progressPercentage}%` }}
               ></div>
             </div>
           </div>
 
           {/* Progress Text */}
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-white/90">{solvedProblems}/{sheet.totalProblems}</span>
-            <span className="text-white font-semibold">{progressPercentage}%</span>
+          <div className="flex justify-between items-center text-sm mb-4">
+            <span className="text-gray-600">{solvedProblems}/{sheet.totalProblems} solved</span>
+            <span className="font-semibold text-gray-800">{progressPercentage}%</span>
           </div>
-        </div>
 
+          <button className={`${getButtonStyle()} text-sm w-full`}>
+            {getButtonText()}
+          </button>
+        </div>
       </Link>
     );
   };
@@ -269,7 +313,7 @@ function CodingSheets() {
               <Link 
                 to="/" 
                 className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-gray-100"
-              >
+              > 
                 <FontAwesomeIcon icon={faHome} />
                 <span>Home</span>
               </Link>

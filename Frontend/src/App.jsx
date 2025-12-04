@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Sparkles, 
+import {
+  Sparkles,
   CheckCircle,
   ArrowRight,
   Menu,
   X
 } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { supabase } from './utils/supabase';
 import { 
   faFileAlt, 
   faBullseye, 
@@ -46,9 +47,23 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    setIsLoggedIn(false);
+  const handleLogout = async () => {
+    try {
+      // Sign out from Supabase (handles OAuth and regular auth)
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error signing out:', error);
+      }
+
+      // Clear local storage
+      localStorage.removeItem('user');
+      setIsLoggedIn(false);
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if Supabase logout fails, clear local data
+      localStorage.removeItem('user');
+      setIsLoggedIn(false);
+    }
   };
 
   const nextSlide = () => {

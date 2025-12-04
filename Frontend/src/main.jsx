@@ -23,6 +23,7 @@ import JobTailoring from './resume/JobTailoring.jsx'
 import ATSChecker from './resume/ATSChecker.jsx'
 import ResumeTemplates from './resume/ResumeTemplates.jsx'
 import SkillGapAnalyzer from './resume/SkillGapAnalyzer.jsx'
+import SubmissionResults from './pages/SubmissionResults.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -45,7 +46,8 @@ createRoot(document.getElementById('root')).render(
         <Route path="/test" element={<TestPage />} />
         <Route path="/test-results" element={<TestResults />} />
         <Route path="/test-review" element={<TestReview />} />
-        
+        <Route path="/submission-results" element={<SubmissionResults />} />
+
         {/* Resume Routes */}
         <Route path="/resume" element={<ResumeLanding />} />
         <Route path="/resume/builder" element={<ResumeBuilder />} />

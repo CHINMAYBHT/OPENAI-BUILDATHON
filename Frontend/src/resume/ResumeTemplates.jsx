@@ -27,7 +27,7 @@ function ResumeTemplates() {
         year: '2018'
       }
     ],
-    skills: ['JavaScript', 'React', 'Node.js', 'MongoDB', 'AWS']
+    skills: ['JavaScript', 'React', 'Node.js', 'PostgreSQL', 'AWS']
   });
 
   const templates = [

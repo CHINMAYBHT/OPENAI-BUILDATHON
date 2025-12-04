@@ -62,7 +62,7 @@ function ResumeBuilder() {
               year: '2018'
             }
           ],
-          skills: ['JavaScript', 'React', 'Node.js', 'MongoDB'],
+          skills: ['JavaScript', 'React', 'Node.js', 'PostgreSQL'],
           certifications: [],
           projects: []
         });
