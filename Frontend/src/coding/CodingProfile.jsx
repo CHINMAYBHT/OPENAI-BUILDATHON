@@ -235,18 +235,28 @@ function CodingProfile() {
                 <span>Companies</span>
               </Link>
               
+              {/* Submissions Button */}
+              <Link
+                to="/coding/submissions"
+                className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-gray-100"
+                title="View my submissions"
+              >
+                <FontAwesomeIcon icon={faCheck} />
+                <span>Submissions</span>
+              </Link>
+
               {/* Coding Page Button */}
-              <Link 
-                to="/coding" 
+              <Link
+                to="/coding"
                 className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-gray-100"
               >
                 <FontAwesomeIcon icon={faCode} />
                 <span>Coding</span>
               </Link>
-              
+
               {/* User Profile Icon */}
-              <Link 
-                to="/coding/profile" 
+              <Link
+                to="/coding/profile"
                 className="p-3 rounded-lg bg-blue-100 hover:bg-blue-200 transition-colors"
               >
                 <FontAwesomeIcon icon={faUser} className="text-blue-600" />

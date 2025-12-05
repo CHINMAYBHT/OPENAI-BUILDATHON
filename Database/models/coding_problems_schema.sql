@@ -223,3 +223,24 @@ create policy "Users insert own"
     )
   );
   
+
+
+  -- AI Chats per Problem
+create table problem_ai_chats (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id),
+  problem_id uuid references problems(id),
+  role text,
+  message text,
+  created_at timestamptz default now()
+);
+
+alter table problem_ai_chats enable row level security;
+
+create policy "Users read own"
+  on problem_ai_chats for select
+  using (auth.uid() = user_id);
+
+create policy "Users insert own"
+  on problem_ai_chats for insert
+  with check (auth.uid() = user_id);

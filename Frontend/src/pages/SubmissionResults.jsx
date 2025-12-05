@@ -20,6 +20,46 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClock, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { faHome, faCode, faUser } from '@fortawesome/free-solid-svg-icons';
 
+// Component to render text with code blocks
+function SuggestionRenderer({ text }) {
+  if (!text) return null;
+
+  // Split text by code block markers
+  const parts = text.split(/(```[\s\S]*?```)/g);
+
+  return (
+    <div className="space-y-3">
+      {parts.map((part, index) => {
+        if (part.startsWith('```') && part.endsWith('```')) {
+          // Extract language and code
+          const content = part.slice(3, -3).trim();
+          const firstLineEnd = content.indexOf('\n');
+          let language = '';
+          let code = content;
+
+          if (firstLineEnd !== -1) {
+            language = content.slice(0, firstLineEnd).trim();
+            code = content.slice(firstLineEnd + 1);
+          }
+
+          return (
+            <pre key={index} className="bg-gray-900 text-green-400 p-4 rounded-lg overflow-x-auto text-sm font-mono">
+              <code>{code}</code>
+            </pre>
+          );
+        } else {
+          // Regular text
+          return (
+            <span key={index} className="text-gray-700">
+              {part}
+            </span>
+          );
+        }
+      })}
+    </div>
+  );
+}
+
 function SubmissionResults() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -32,10 +72,11 @@ function SubmissionResults() {
     success: true,
     testCasesPassed: 2,
     totalTestCases: 3,
-    timeTaken: 45,
-    totalTime: 60,
     code: '',
-    problemId: 1
+    problemId: 1,
+    aiReview: null,
+    readability_score: null,
+    maintainability_score: null
   };
 
   useEffect(() => {
@@ -49,57 +90,60 @@ function SubmissionResults() {
     setIsLoggedIn(false);
   };
 
-  // Calculate the circle progress percentage
-  const timeProgress = ((results.totalTime - results.timeTaken) / results.totalTime) * 100;
-  const testProgress = (results.testCasesPassed / results.totalTestCases) * 100;
+  // Calculate success rate percentage
+  const successRate = (results.testCasesPassed / results.totalTestCases) * 100;
 
-  // Generate AI review data
-  const getAIReview = () => {
-    const strengthAreas = [
+  // Use AI review data from results or fallback to generic
+  const aiReview = results.aiReview || {
+    strengths: [
       "Strong understanding of basic algorithms and data structures",
       "Good use of Hash Maps for O(1) lookup performance",
       "Clean code structure with meaningful variable names",
       "Efficient space complexity considerations",
       "Proper input validation and edge case handling"
-    ];
-
-    const areasToImproveAndSuggestions = [
+    ],
+    weaknesses: [
       "Optimize inner loop to reduce time complexity from O(n²) to O(n) - Consider using a HashSet for O(1) lookups instead of nested loops",
       "Add early return statements for invalid inputs to improve code readability and performance",
       "Consider using more descriptive variable names throughout the solution",
       "Add unit tests for all edge cases, especially empty arrays and single elements",
       "Missing comprehensive error handling for edge cases - implement proper null/undefined checks",
       "Include JSDoc comments for better documentation and maintainability"
-    ];
+    ],
+    interview_perspective: [
+      "You demonstrated solid problem-solving skills with a working solution. The interviewer would appreciate your clear thinking and structured approach, though they might ask about optimization opportunities.",
+      "Shows good foundation in algorithm implementation, needs optimization focus"
+    ],
+    critical_issues: results.success
+      ? []
+      : ["Logic errors in edge case handling", "Incorrect time/space complexity", "Algorithm doesn't handle all edge cases properly, specifically: empty arrays, single elements, and negative numbers."],
+    readability_score: results.readability_score || (results.success ? 8.5 : 6.2),
+    maintainability_score: results.maintainability_score || (results.success ? 8.0 : 5.8),
+    suggestions: `The primary suggestion is to implement the actual solution to the Maximum Subarray problem. This typically involves using Kadane's algorithm for optimal efficiency.
 
-    const companyReadiness = [
-      "Google - Entry level role preparation",
-      "Amazon - Good foundation, needs optimization",
-      "Meta - Strong on data structures, improve problem solving speed",
-      "Microsoft - Excellent clean code practices"
-    ];
+The function solve should accept the nums array as an argument and return the maximum sum.
 
-    const interviewFeedback = results.success
-      ? "You demonstrated solid problem-solving skills with a working solution. The interviewer would appreciate your clear thinking and structured approach, though they might ask about optimization opportunities."
-      : "Your approach shows understanding of the problem, but there are implementation issues that need fixing. The interviewer would push for debugging skills and cleaner code structure.";
+Example:
+\`\`\`javascript
+function maxSubArray(nums) {
+    if (!nums || nums.length === 0) {
+        return 0; // Or throw an error, depending on requirements
+    }
 
-    return {
-      strengthAreas,
-      areasToImproveAndSuggestions,
-      companyReadiness,
-      interviewFeedback,
-      readabilityScore: results.success ? 8.5 : 6.2,
-      maintainabilityScore: results.success ? 8.0 : 5.8,
-      hiddenFlaws: results.success
-        ? ["Minor variable naming inconsistencies", "Could add input bounds checking"]
-        : ["Logic errors in edge case handling", "Incorrect time/space complexity", "Poor error messaging"],
-      failureReason: results.success
-        ? null
-        : "Algorithm doesn't handle all edge cases properly, specifically: empty arrays, single elements, and negative numbers."
-    };
+    let maxSoFar = nums[0];
+    let currentMax = nums[0];
+
+    for (let i = 1; i < nums.length; i++) {
+        currentMax = Math.max(nums[i], currentMax + nums[i]);
+        maxSoFar = Math.max(maxSoFar, currentMax);
+    }
+
+    return maxSoFar;
+}
+\`\`\`
+
+Also, consider adding comments to explain complex parts of the logic and ensure variable names are descriptive.`,
   };
-
-const aiReview = getAIReview();
 
   const statusOptions = ['Strengths', 'Interview Perspective', 'Improvement Areas', 'Issues Found'];
 
@@ -173,10 +217,10 @@ const aiReview = getAIReview();
 
           {/* Statistics Cards */}
           <div className="grid md:grid-cols-4 gap-6 mb-12">
-            {/* Time Taken */}
+            {/* Success Rate */}
             <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
               <div className="text-center">
-                <h3 className="text-lg font-bold text-gray-800 mb-6">Time Taken</h3>
+                <h3 className="text-lg font-bold text-gray-800 mb-6">Success Rate</h3>
                 <div className="relative h-32 w-32 mx-auto">
                   <svg className="transform -rotate-90 h-32 w-32">
                     <circle
@@ -191,18 +235,19 @@ const aiReview = getAIReview();
                       cx="64"
                       cy="64"
                       r="56"
-                      stroke="#3b82f6"
+                      stroke="#10b981"
                       strokeWidth="8"
                       fill="transparent"
                       strokeDasharray={`${2 * Math.PI * 56}`}
-                      strokeDashoffset={`${2 * Math.PI * 56 * (1 - timeProgress / 100)}`}
+                      strokeDashoffset={`${2 * Math.PI * 56 * (1 - successRate / 100)}`}
                       strokeLinecap="round"
                       className="transition-all duration-1000"
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-gray-800">{results.timeTaken}m</div>
+                      <div className="text-2xl font-bold text-gray-800">{Math.round(successRate)}%</div>
+                      <div className="text-sm text-gray-500">{results.testCasesPassed}/{results.totalTestCases}</div>
                     </div>
                   </div>
                 </div>
@@ -231,7 +276,7 @@ const aiReview = getAIReview();
                       strokeWidth="8"
                       fill="transparent"
                       strokeDasharray={`${2 * Math.PI * 56}`}
-                      strokeDashoffset={`${2 * Math.PI * 56 * (1 - testProgress / 100)}`}
+                      strokeDashoffset={`${2 * Math.PI * 56 * (1 - (results.testCasesPassed / results.totalTestCases))}`}
                       strokeLinecap="round"
                       className="transition-all duration-1000"
                     />
@@ -267,14 +312,14 @@ const aiReview = getAIReview();
                       strokeWidth="8"
                       fill="transparent"
                       strokeDasharray={`${2 * Math.PI * 56}`}
-                      strokeDashoffset={`${2 * Math.PI * 56 * (1 - aiReview.readabilityScore / 10)}`}
+                      strokeDashoffset={`${2 * Math.PI * 56 * (1 - aiReview.readability_score / 10)}`}
                       strokeLinecap="round"
                       className="transition-all duration-1000"
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-cyan-600">{aiReview.readabilityScore}</div>
+                      <div className="text-2xl font-bold text-cyan-600">{aiReview.readability_score}</div>
                       <div className="text-xs text-gray-500">/10</div>
                     </div>
                   </div>
@@ -304,14 +349,14 @@ const aiReview = getAIReview();
                       strokeWidth="8"
                       fill="transparent"
                       strokeDasharray={`${2 * Math.PI * 56}`}
-                      strokeDashoffset={`${2 * Math.PI * 56 * (1 - aiReview.maintainabilityScore / 10)}`}
+                      strokeDashoffset={`${2 * Math.PI * 56 * (1 - aiReview.maintainability_score / 10)}`}
                       strokeLinecap="round"
                       className="transition-all duration-1000"
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-orange-600">{aiReview.maintainabilityScore}</div>
+                      <div className="text-2xl font-bold text-orange-600">{aiReview.maintainability_score}</div>
                       <div className="text-xs text-gray-500">/10</div>
                     </div>
                   </div>
@@ -339,7 +384,7 @@ const aiReview = getAIReview();
                     </td>
                     <td className="px-6 py-4">
                       <div className="space-y-2">
-                        {aiReview.strengthAreas.slice(0, 3).map((strength, index) => (
+                        {aiReview.strengths && aiReview.strengths.slice(0, 5).map((strength, index) => (
                           <div key={index} className="flex items-start space-x-2">
                             <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                             <span className="text-sm text-gray-700 leading-relaxed">{strength}</span>
@@ -355,8 +400,10 @@ const aiReview = getAIReview();
                       Interview Perspective
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-700 leading-relaxed">
-                        {aiReview.interviewFeedback}
+                      <div className="space-y-2">
+                        {aiReview.interview_perspective && aiReview.interview_perspective.map((perspective, index) => (
+                          <div key={index} className="text-sm text-gray-700 leading-relaxed">{perspective}</div>
+                        ))}
                       </div>
                     </td>
                   </tr>
@@ -368,43 +415,46 @@ const aiReview = getAIReview();
                     </td>
                     <td className="px-6 py-4">
                       <div className="grid md:grid-cols-2 gap-4">
-                        {aiReview.areasToImproveAndSuggestions.map((item, index) => (
+                        {aiReview.weaknesses && aiReview.weaknesses.map((weakness, index) => (
                           <div key={index} className="flex space-x-2">
                             <div className="w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                               <span className="text-white text-xs font-bold">{index + 1}</span>
                             </div>
-                            <span className="text-sm text-gray-700 leading-relaxed">{item}</span>
+                            <span className="text-sm text-gray-700 leading-relaxed">{weakness}</span>
                           </div>
                         ))}
                       </div>
                     </td>
                   </tr>
 
+                  {/* Suggestions Row */}
+                  {aiReview.suggestions && (
+                    <tr className="border-b border-gray-100">
+                      <td className="px-6 py-4 bg-gray-50 font-semibold text-gray-800 border-r border-gray-100">
+                        Suggestions
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-700 leading-relaxed">
+                          <SuggestionRenderer text={aiReview.suggestions} />
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+
                   {/* Critical Issues Found Row */}
-                  {aiReview.hiddenFlaws.length > 0 && (
+                  {aiReview.critical_issues && aiReview.critical_issues.length > 0 && (
                     <tr>
                       <td className="px-6 py-4 bg-gray-50 font-semibold text-gray-800 border-r border-gray-100">
                         Critical Issues Found
                       </td>
                       <td className="px-6 py-4">
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            {aiReview.hiddenFlaws.map((flaw, index) => (
-                              <div key={index} className="flex items-start space-x-2">
-                                <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                                <span className="text-sm text-gray-700 leading-relaxed">{flaw}</span>
-                              </div>
-                            ))}
-                          </div>
-                          {aiReview.failureReason && (
-                            <div className="bg-red-100 border border-red-300 rounded-lg p-4">
-                              <div className="flex items-center space-x-2 mb-2">
-                                <FontAwesomeIcon icon={faTimes} className="text-red-600 w-4 h-4" />
-                                <span className="font-semibold text-red-800 text-sm">Failure Analysis</span>
-                              </div>
-                              <p className="text-xs text-red-700 leading-relaxed">{aiReview.failureReason}</p>
+                        <div className="space-y-2">
+                          {aiReview.critical_issues.map((issue, index) => (
+                            <div key={index} className="flex items-start space-x-2">
+                              <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                              <span className="text-sm text-gray-700 leading-relaxed">{issue}</span>
                             </div>
-                          )}
+                          ))}
                         </div>
                       </td>
                     </tr>

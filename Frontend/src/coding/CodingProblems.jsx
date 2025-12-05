@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faUser, 
-  faHome, 
+import {
+  faUser,
+  faHome,
   faCode,
   faSearch,
   faCheck,
@@ -26,7 +26,7 @@ function CodingProblems() {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [sortBy, setSortBy] = useState('none');
   const [sortOrder, setSortOrder] = useState('asc');
-  
+
   const sortRef = useRef(null);
   const filterRef = useRef(null);
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ function CodingProblems() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  
+
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -45,92 +45,71 @@ function CodingProblems() {
         setShowFilterDropdown(false);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
-  // Sample problems data
-  const problems = [
-    {
-      id: 1,
-      title: "Two Sum",
-      difficulty: "Easy",
-      topics: ["Array", "Hash Table"],
-      solved: true,
-      starred: false,
-      acceptanceRate: 47.2,
-      companies: ["Google", "Amazon", "Facebook"]
-    },
-    {
-      id: 2,
-      title: "Add Two Numbers",
-      difficulty: "Medium",
-      topics: ["Linked List", "Math"],
-      solved: false,
-      starred: true,
-      acceptanceRate: 35.8,
-      companies: ["Microsoft", "Apple"]
-    },
-    {
-      id: 3,
-      title: "Longest Substring Without Repeating Characters",
-      difficulty: "Medium",
-      topics: ["String", "Sliding Window"],
-      solved: true,
-      starred: false,
-      acceptanceRate: 32.4,
-      companies: ["Amazon", "Bloomberg"]
-    },
-    {
-      id: 4,
-      title: "Median of Two Sorted Arrays",
-      difficulty: "Hard",
-      topics: ["Array", "Binary Search"],
-      solved: false,
-      starred: true,
-      acceptanceRate: 29.1,
-      companies: ["Google", "Facebook"]
-    },
-    {
-      id: 5,
-      title: "Longest Palindromic Substring",
-      difficulty: "Medium",
-      topics: ["String", "Dynamic Programming"],
-      solved: true,
-      starred: false,
-      acceptanceRate: 31.6,
-      companies: ["Amazon", "Microsoft"]
-    },
-    {
-      id: 6,
-      title: "ZigZag Conversion",
-      difficulty: "Medium",
-      topics: ["String"],
-      solved: false,
-      starred: false,
-      acceptanceRate: 39.7,
-      companies: ["PayPal"]
-    }
-  ];
+  // Problems loaded from Supabase
+  const [problems, setProblems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      setLoading(true);
+      setFetchError(null);
+      try {
+        const { supabase } = await import('../utils/supabase');
+        const { data, error } = await supabase
+          .from('problems')
+          .select('id, problem_number, slug, title, difficulty, topics, acceptance_rate')
+          .order('problem_number', { ascending: true });
+
+        if (error) throw error;
+        if (!mounted) return;
+
+        const mapped = (data || []).map(item => ({
+          id: item.id,
+          problemNumber: item.problem_number,
+          slug: item.slug,
+          title: item.title,
+          difficulty: item.difficulty ? String(item.difficulty).charAt(0).toUpperCase() + String(item.difficulty).slice(1) : 'Medium',
+          topics: Array.isArray(item.topics) ? item.topics : (item.topics ? JSON.parse(item.topics) : []),
+          acceptanceRate: item.acceptance_rate ?? 0,
+          solved: false,
+          starred: false
+        }));
+
+        setProblems(mapped);
+      } catch (err) {
+        setFetchError(err.message || String(err));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+    return () => { mounted = false; };
+  }, []);
 
   const difficulties = ['all', 'Easy', 'Medium', 'Hard'];
   const topics = ['all', 'Array', 'String', 'Linked List', 'Hash Table', 'Math', 'Dynamic Programming', 'Binary Search', 'Sliding Window'];
 
   const toggleStar = (problemId) => {
     const newStarred = new Set(starredProblems);
-    if (newStarred.has(problemId)) {
-      newStarred.delete(problemId);
-    } else {
-      newStarred.add(problemId);
-    }
+    if (newStarred.has(problemId)) newStarred.delete(problemId);
+    else newStarred.add(problemId);
     setStarredProblems(newStarred);
+    setProblems(prev => prev.map(p => p.id === problemId ? { ...p, starred: !p.starred } : p));
   };
 
   const shuffleProblems = () => {
-    const shuffled = [...problems].sort(() => Math.random() - 0.5);
+    const source = isShuffled ? shuffledProblems : problems;
+    const shuffled = [...source].sort(() => Math.random() - 0.5);
     setShuffledProblems(shuffled);
     setIsShuffled(true);
   };
@@ -142,11 +121,11 @@ function CodingProblems() {
 
   const sortProblems = (problems) => {
     if (sortBy === 'none') return problems;
-    
+
     return [...problems].sort((a, b) => {
       let aValue, bValue;
-      
-      switch(sortBy) {
+
+      switch (sortBy) {
         case 'acceptanceRate':
           aValue = a.acceptanceRate;
           bValue = b.acceptanceRate;
@@ -164,7 +143,7 @@ function CodingProblems() {
         default:
           return 0;
       }
-      
+
       if (sortOrder === 'asc') {
         return aValue - bValue;
       } else {
@@ -191,7 +170,7 @@ function CodingProblems() {
     const matchesTopic = selectedTopic === 'all' || problem.topics.includes(selectedTopic);
     return matchesSearch && matchesDifficulty && matchesTopic;
   });
-  
+
   const sortedProblems = sortProblems(filteredProblems);
 
   // Calculate solved problems
@@ -199,7 +178,7 @@ function CodingProblems() {
   const totalCount = problems.length;
 
   const getDifficultyColor = (difficulty) => {
-    switch(difficulty) {
+    switch (difficulty) {
       case 'Easy': return 'text-green-600';
       case 'Medium': return 'text-yellow-600';
       case 'Hard': return 'text-red-600';
@@ -247,7 +226,7 @@ function CodingProblems() {
           transition: opacity 150ms ease-in, transform 150ms ease-in;
         }
       `}</style>
-      
+
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 transition-all duration-300 bg-white shadow-sm">
         <div className="w-full px-6 sm:px-8 lg:px-12">
@@ -255,30 +234,30 @@ function CodingProblems() {
             <div className="flex items-center">
               <span className="text-lg font-bold text-gray-800">Job Builder</span>
             </div>
-            
+
             {/* Right side navigation */}
             <div className="flex items-center space-x-6">
               {/* Home Button */}
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-gray-100"
               >
                 <FontAwesomeIcon icon={faHome} />
                 <span>Home</span>
               </Link>
-              
+
               {/* Coding Page Button */}
-              <Link 
-                to="/coding" 
+              <Link
+                to="/coding"
                 className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-gray-100"
               >
                 <FontAwesomeIcon icon={faCode} />
                 <span>Coding</span>
               </Link>
-              
+
               {/* User Profile Icon */}
-              <Link 
-                to="/coding/profile" 
+              <Link
+                to="/coding/profile"
                 className="p-3 rounded-lg bg-blue-100 hover:bg-blue-200 transition-colors"
               >
                 <FontAwesomeIcon icon={faUser} className="text-blue-600" />
@@ -291,7 +270,7 @@ function CodingProblems() {
       {/* Main Content */}
       <main className="pt-24 pb-16 px-6 sm:px-8 lg:px-12">
         <div className="w-full">
-          
+
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-gray-800 mb-6">
@@ -434,10 +413,10 @@ function CodingProblems() {
                     className="bg-white text-gray-900 placeholder-gray-500 pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none w-96"
                   />
                 </div>
-                
+
                 {/* Sort icon with dropdown */}
                 <div className="relative" ref={sortRef}>
-                  <button 
+                  <button
                     onClick={() => {
                       setShowSortDropdown(!showSortDropdown);
                       if (showFilterDropdown) setShowFilterDropdown(false);
@@ -445,11 +424,11 @@ function CodingProblems() {
                     className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex flex-col items-center">
-                      <FontAwesomeIcon icon={faArrowUp} className="text-gray-600" style={{fontSize: '8px'}} />
-                      <FontAwesomeIcon icon={faArrowDown} className="text-gray-600" style={{fontSize: '8px'}} />
+                      <FontAwesomeIcon icon={faArrowUp} className="text-gray-600" style={{ fontSize: '8px' }} />
+                      <FontAwesomeIcon icon={faArrowDown} className="text-gray-600" style={{ fontSize: '8px' }} />
                     </div>
                   </button>
-                  
+
                   {/* Sort Dropdown Menu */}
                   {showSortDropdown && (
                     <div className="absolute left-0 top-12 bg-white border border-gray-200 rounded-lg shadow-lg py-2 w-48 z-10 transform transition-all duration-200 ease-out opacity-100 scale-100 animate-in">
@@ -467,15 +446,14 @@ function CodingProblems() {
                               setSortBy(option.value);
                               setShowSortDropdown(false);
                             }}
-                            className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${
-                              sortBy === option.value ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
-                            }`}
+                            className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${sortBy === option.value ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+                              }`}
                           >
                             {option.label}
                           </button>
                         ))}
                       </div>
-                      
+
                       {/* Sort Order */}
                       <div className="border-t border-gray-200 my-2"></div>
                       <div className="px-4 py-2">
@@ -485,9 +463,8 @@ function CodingProblems() {
                             setSortOrder('asc');
                             setShowSortDropdown(false);
                           }}
-                          className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${
-                            sortOrder === 'asc' ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
-                          }`}
+                          className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${sortOrder === 'asc' ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+                            }`}
                         >
                           Ascending
                         </button>
@@ -496,14 +473,13 @@ function CodingProblems() {
                             setSortOrder('desc');
                             setShowSortDropdown(false);
                           }}
-                          className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${
-                            sortOrder === 'desc' ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
-                          }`}
+                          className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${sortOrder === 'desc' ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+                            }`}
                         >
                           Descending
                         </button>
                       </div>
-                      
+
                       {/* Clear Sort */}
                       <div className="border-t border-gray-200 my-2"></div>
                       <div className="px-4 py-2">
@@ -520,10 +496,10 @@ function CodingProblems() {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Filter icon with dropdown */}
                 <div className="relative" ref={filterRef}>
-                  <button 
+                  <button
                     onClick={() => {
                       setShowFilterDropdown(!showFilterDropdown);
                       if (showSortDropdown) setShowSortDropdown(false);
@@ -532,7 +508,7 @@ function CodingProblems() {
                   >
                     <HiFilter className="text-gray-600 text-lg" style={{ stroke: 'currentColor', fill: 'transparent', strokeWidth: 1.5 }} />
                   </button>
-                  
+
                   {/* Dropdown Menu */}
                   {showFilterDropdown && (
                     <div className="absolute left-0 top-12 bg-white border border-gray-200 rounded-lg shadow-lg py-2 w-48 z-10 transform transition-all duration-200 ease-out opacity-100 scale-100 animate-in">
@@ -546,18 +522,17 @@ function CodingProblems() {
                               setSelectedDifficulty(difficulty);
                               setShowFilterDropdown(false);
                             }}
-                            className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${
-                              selectedDifficulty === difficulty ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
-                            }`}
+                            className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${selectedDifficulty === difficulty ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+                              }`}
                           >
                             {difficulty === 'all' ? 'All Difficulties' : difficulty}
                           </button>
                         ))}
                       </div>
-                      
+
                       {/* Divider */}
                       <div className="border-t border-gray-200 my-2"></div>
-                      
+
                       {/* Topics Section */}
                       <div className="px-4 py-2">
                         <h4 className="text-sm font-semibold text-gray-700 mb-2">Topics</h4>
@@ -569,16 +544,15 @@ function CodingProblems() {
                                 setSelectedTopic(topic);
                                 setShowFilterDropdown(false);
                               }}
-                              className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${
-                                selectedTopic === topic ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
-                              }`}
+                              className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${selectedTopic === topic ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+                                }`}
                             >
                               {topic === 'all' ? 'All Topics' : topic}
                             </button>
                           ))}
                         </div>
                       </div>
-                      
+
                       {/* Clear Filters */}
                       <div className="border-t border-gray-200 my-2"></div>
                       <div className="px-4 py-2">
@@ -602,7 +576,7 @@ function CodingProblems() {
                 <div className="text-sm text-gray-600">
                   <span className="text-gray-900 font-medium">{solvedCount}</span>/{totalCount} Solved
                 </div>
-                <button 
+                <button
                   onClick={isShuffled ? resetShuffle : shuffleProblems}
                   className="w-10 h-10 flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors"
                   title={isShuffled ? 'Reset' : 'Shuffle'}
@@ -629,9 +603,9 @@ function CodingProblems() {
                 </thead>
                 <tbody className="bg-transparent">
                   {sortedProblems.map((problem) => (
-                    <tr key={problem.id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => navigate(`/coding/problem/${problem.id}`)}>
+                    <tr key={problem.id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => navigate(`/coding/problem/${problem.slug}`)}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {problem.id}
+                        {problem.problemNumber}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {problem.solved ? (
@@ -641,7 +615,7 @@ function CodingProblems() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {problem.title}
+                        {problem.title}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`text-sm font-semibold ${getDifficultyColor(problem.difficulty)}`}>
@@ -655,7 +629,7 @@ function CodingProblems() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button
-                          onClick={() => toggleStar(problem.id)}
+                          onClick={(e) => { e.stopPropagation(); toggleStar(problem.id); }}
                           className="hover:scale-110 transition-transform duration-200 text-2xl"
                         >
                           <span className={starredProblems.has(problem.id) || problem.starred ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-400'}>
@@ -668,14 +642,33 @@ function CodingProblems() {
                 </tbody>
               </table>
             </div>
-            
-            {sortedProblems.length === 0 && (
+
+            {sortedProblems.length === 0 && !loading && (
               <div className="text-center py-12">
                 <div className="text-gray-500 text-lg">No problems found matching your criteria</div>
                 <div className="text-gray-400 text-sm mt-2">Try adjusting your filters</div>
               </div>
             )}
           </div>
+
+          {/* Loading or error state */}
+          {loading && (
+            <div className="py-12 flex items-center justify-center">
+              <div className="flex items-center space-x-3">
+                <svg className="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                </svg>
+                <div className="text-gray-700">Loading problems...</div>
+              </div>
+            </div>
+          )}
+
+          {fetchError && (
+            <div className="mt-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded">
+              <strong>Error:</strong> {fetchError}
+            </div>
+          )}
 
           {/* Results Summary */}
           <div className="mt-6 text-center text-gray-600">

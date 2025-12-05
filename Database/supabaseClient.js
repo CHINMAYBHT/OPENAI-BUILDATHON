@@ -12,6 +12,7 @@ dotenv.config({ path: join(__dirname, '../.env') });
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
+
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Supabase URL or ANON KEY not set in environment variables');
 }
