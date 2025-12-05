@@ -1094,12 +1094,17 @@ Try going through the problem requirements again and see if you're missing anyth
       console.warn('Error persisting user chat:', err);
     }
 
+    // Get the last 3 chat messages for context (excluding the current message being sent)
+    const recentChats = messages.slice(-3); // Get last 3 messages
+
     // Try calling the server assistant with the chat query; fallback to mock on error
     try {
       const payload = {
         code,
         // Send the full problem description from the currently selected view
         problem: currentViewData?.description || currentProblem?.description || '',
+        // Send recent conversation history
+        chatHistory: recentChats,
         // Also send the user's chat message as a separate field the server can use as a query
         query: chatInput,
         input: currentViewData.inputFormat,

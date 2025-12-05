@@ -23,7 +23,7 @@ const getLanguageId = (lang) => {
 };
 
 router.post("/assist", async (req, res) => {
-  const { code, query, problem, input, output, language } = req.body || {};
+  const { code, query, problem, input, output, language, chatHistory } = req.body || {};
 
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
   if (!GEMINI_API_KEY) {
@@ -40,22 +40,30 @@ router.post("/assist", async (req, res) => {
     // ⭐ SYSTEM INSTRUCTIONS (apply to every answer)
     const systemInstruction = `
                 You must follow these rules strictly:
-                - Use freindly language with emojies if required
+                - Use friendly language with emojis if required
                 - Do not give full solution hints, but ALWAYS provide a "small" nudge or suggestion.
-                - In hints do not givhhe the actual solution path unless user insists .
-                - Do not use bold formatting or markdown symbols of any kind.
+                - In hints do not give the actual solution path unless user insists.
+                - Do not use bold formatting, markdown symbols, asterisks (*), placeholders, or any formatting symbols (****, etc.)
+                - NEVER use asterisks (*), placeholders, or any special formatting characters
                 - Do not output code under any circumstance.
                 - If the user asks for code, say: "I cannot give code, but I can guide you conceptually."
                 - Keep every response short, concise, and directly answering the question.
                 - Provide only conceptual feedback, explanations, and suggestions.
                 - Never wrap text in asterisks or special formatting.
                 - Stay focused only on the question asked.
-                - You must always give some response.Never stay silent. If unsure, give a tiny conceptual suggestion.
-                - Do not greet 
-                - Do not say no response `;
-    const userPrompt = `
-                Analyze the user's code and problem and respond concisely.
+                - You must always give some response. Never stay silent. If unsure, give a tiny conceptual suggestion.
+                - Do not greet
+                - Do not say "no response"`;
+    // Format chat history for context
+    let chatContext = '';
+    if (chatHistory && Array.isArray(chatHistory) && chatHistory.length > 0) {
+      chatContext = '\n\nRecent conversation history:\n' +
+        chatHistory.map(chat => `${chat.isUser ? 'User' : 'Assistant'}: ${chat.text}`).join('\n') +
+        '\n\n';
+    }
 
+    const userPrompt = `
+                Analyze the user's code and problem and respond concisely.${chatContext}
                 Problem description:
                 ${problem}
 
@@ -308,8 +316,7 @@ router.post('/generate-ai-review', async (req, res) => {
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    const systemInstruction = `
-You are an expert code reviewer evaluating submission code for coding interviews.
+    const systemInstruction = `You are an expert code reviewer evaluating submission code for coding interviews.
 Analyze the provided code and return a JSON object with the following structure:
 
 {
@@ -322,15 +329,17 @@ Analyze the provided code and return a JSON object with the following structure:
   "suggestions": "<text with improvement suggestions>"
 }
 
-Guidelines:
+STRICT RULES:
+- NEVER use asterisks (*), placeholders, or any formatting symbols (****, etc.)
+- NEVER use quotation marks around strings unless they are part of the content
+- NEVER add explanatory text outside the JSON structure
+- Return ONLY the JSON object, nothing else
 - Scores: Whole numbers 1-10 (10 being best)
 - Readability: Focus on naming, structure, clarity
 - Maintainability: Focus on modularity, documentation, future changes
 - Strengths/weaknesses/interview_perspective: Be specific and actionable
 - Critical issues: Only major problems that would fail interviews
-- Keep all text concise but helpful
-- Return ONLY valid JSON, no markdown or explanation
-`;
+- Keep all text concise but helpful`;
 
     const userPrompt = `
 Review this code submission:
@@ -415,8 +424,7 @@ router.post('/save-submission-with-review', async (req, res) => {
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    const systemInstruction = `
-You are an expert code reviewer evaluating submission code for coding interviews.
+    const systemInstruction = `You are an expert code reviewer evaluating submission code for coding interviews.
 Analyze the provided code and return a JSON object with the following structure:
 
 {
@@ -429,15 +437,17 @@ Analyze the provided code and return a JSON object with the following structure:
   "suggestions": "<text with improvement suggestions>"
 }
 
-Guidelines:
+STRICT RULES:
+- NEVER use asterisks (*), placeholders, or any formatting symbols (****, etc.)
+- NEVER use quotation marks around strings unless they are part of the content
+- NEVER add explanatory text outside the JSON structure
+- Return ONLY the JSON object, nothing else
 - Scores: Whole numbers 1-10 (10 being best)
 - Readability: Focus on naming, structure, clarity
 - Maintainability: Focus on modularity, documentation, future changes
 - Strengths/weaknesses/interview_perspective: Be specific and actionable
 - Critical issues: Only major problems that would fail interviews
-- Keep all text concise but helpful
-- Return ONLY valid JSON, no markdown or explanation
-`;
+- Keep all text concise but helpful`;
 
     const userPrompt = `
 Review this code submission:
