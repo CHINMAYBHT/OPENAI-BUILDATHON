@@ -83,9 +83,9 @@ function CodeEditor() {
   const [chatInput, setChatInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState('');
-  // API base (backend) - during dev set VITE_API_BASE or VITE_BACKEND_URL, otherwise default to localhost:5000
+  // API base (backend) - during dev set VITE_API_BASE_URL or VITE_BACKEND_URL, otherwise default to localhost:5000
   const apiBase = typeof import.meta !== 'undefined' && import.meta.env
-    ? (import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000')
+    ? (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000')
     : 'http://localhost:5000';
 
   // Problem data fetched from DB (by slug)
