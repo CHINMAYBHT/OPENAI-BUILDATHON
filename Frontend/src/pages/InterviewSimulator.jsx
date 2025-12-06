@@ -121,36 +121,35 @@ function InterviewSimulator() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('file', file);
-
     if (type === 'jd') setIsUploadingJD(true);
     if (type === 'resume') setIsUploadingResume(true);
     setError('');
 
     try {
-      const response = await fetch(`${apiBase}/api/interview/extract-pdf-text`, {
-        method: 'POST',
-        body: formData,
-      });
+      // Client-side PDF text extraction using pdfjs-dist
+      const pdfjs = await import('pdfjs-dist/build/pdf');
+      const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry');
+      pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker.default;
 
-      if (!response.ok) {
-        throw new Error(`Failed to extract text from PDF: ${response.status}`);
-      }
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
 
-      const data = await response.json();
-      if (data.error) {
-        throw new Error(data.error);
+      let extractedText = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map(item => item.str).join(' ');
+        extractedText += pageText + '\n';
       }
 
       if (type === 'jd') {
-        setJobDescription(data.text || '');
+        setJobDescription(extractedText.trim());
       } else {
-        setResume(data.text || '');
+        setResume(extractedText.trim());
       }
     } catch (err) {
-      console.error(err);
-      setError(err.message || 'Failed to extract text from PDF.');
+      console.error('PDF extraction error:', err);
+      setError('Failed to extract text from PDF. Please try copying and pasting the text instead.');
     } finally {
       if (type === 'jd') setIsUploadingJD(false);
       if (type === 'resume') setIsUploadingResume(false);
