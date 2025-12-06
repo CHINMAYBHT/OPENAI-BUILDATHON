@@ -1,0 +1,11 @@
+-- Disable RLS for user_problem_status table to allow backend operations
+-- This is for development only - in production, use service role key instead
+alter table user_problem_status disable row level security;
+-- Alternative: Allow public access for upsert operations (less secure but works)
+-- alter table user_problem_status enable row level security;
+-- drop policy if exists "Users insert own" on user_problem_status;
+-- drop policy if exists "Users update own" on user_problem_status;
+-- 
+-- create policy "Public insert" on user_problem_status for insert with check (true);
+-- create policy "Public update" on user_problem_status for update using (true) with check (true);
+-- create policy "Users read own" on user_problem_status for select using (auth.uid() = user_id);

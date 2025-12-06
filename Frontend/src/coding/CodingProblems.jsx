@@ -56,6 +56,11 @@ function CodingProblems() {
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState(null);
+  const [userStatusMap, setUserStatusMap] = useState({});
+
+  const apiBase = typeof import.meta !== 'undefined' && import.meta.env
+    ? (import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000')
+    : 'http://localhost:5000';
 
   useEffect(() => {
     let mounted = true;
@@ -64,6 +69,8 @@ function CodingProblems() {
       setFetchError(null);
       try {
         const { supabase } = await import('../utils/supabase');
+        const { data: { user } } = await supabase.auth.getUser();
+
         const { data, error } = await supabase
           .from('problems')
           .select('id, problem_number, slug, title, difficulty, topics, acceptance_rate')
@@ -85,6 +92,34 @@ function CodingProblems() {
         }));
 
         setProblems(mapped);
+
+        // Load user problem statuses if logged in
+        if (user) {
+          const statusMap = {};
+          for (const problem of mapped) {
+            try {
+              const response = await fetch(
+                `${apiBase}/api/problem-status/status/${user.id}/${problem.id}`
+              );
+              const statusData = await response.json();
+              statusMap[problem.id] = statusData;
+              console.log(`Loaded status for problem ${problem.id}:`, statusData);
+            } catch (err) {
+              console.error('Error loading problem status:', err);
+            }
+          }
+          if (mounted) {
+            setUserStatusMap(statusMap);
+            // Update problems with user status
+            const updatedProblems = mapped.map(p => ({
+              ...p,
+              starred: statusMap[p.id]?.starred || false,
+              solved: statusMap[p.id]?.status === 'solved'
+            }));
+            console.log('Updated problems with statuses:', updatedProblems.filter(p => p.solved).length, 'solved');
+            setProblems(updatedProblems);
+          }
+        }
       } catch (err) {
         setFetchError(err.message || String(err));
       } finally {
@@ -94,17 +129,80 @@ function CodingProblems() {
 
     load();
     return () => { mounted = false; };
+  }, [apiBase]);
+
+  // Listen for problem status changes from CodeEditor
+  useEffect(() => {
+    const handleStatusUpdate = async (event) => {
+      const { problemId, status } = event.detail;
+      console.log(`Problem ${problemId} status updated to: ${status}`);
+
+      // Update problems array with new status
+      setProblems(prev => prev.map(p =>
+        p.id === problemId
+          ? { ...p, solved: status === 'solved' }
+          : p
+      ));
+
+      // Update status map
+      setUserStatusMap(prev => ({
+        ...prev,
+        [problemId]: { ...prev[problemId], status }
+      }));
+    };
+
+    window.addEventListener('problemStatusUpdated', handleStatusUpdate);
+    return () => window.removeEventListener('problemStatusUpdated', handleStatusUpdate);
   }, []);
 
   const difficulties = ['all', 'Easy', 'Medium', 'Hard'];
   const topics = ['all', 'Array', 'String', 'Linked List', 'Hash Table', 'Math', 'Dynamic Programming', 'Binary Search', 'Sliding Window'];
 
-  const toggleStar = (problemId) => {
-    const newStarred = new Set(starredProblems);
-    if (newStarred.has(problemId)) newStarred.delete(problemId);
-    else newStarred.add(problemId);
-    setStarredProblems(newStarred);
-    setProblems(prev => prev.map(p => p.id === problemId ? { ...p, starred: !p.starred } : p));
+  const toggleStar = async (problemId) => {
+    try {
+      const { supabase } = await import('../utils/supabase');
+      const { data: { user }, data: { session } } = await supabase.auth.getUser();
+
+      if (!user) {
+        alert('Please log in to star problems');
+        return;
+      }
+
+      const currentStatus = userStatusMap[problemId]?.starred || false;
+      const newStarred = !currentStatus;
+
+      // Update UI optimistically
+      const newStarred_set = new Set(starredProblems);
+      if (newStarred_set.has(problemId)) newStarred_set.delete(problemId);
+      else newStarred_set.add(problemId);
+      setStarredProblems(newStarred_set);
+      setProblems(prev => prev.map(p => p.id === problemId ? { ...p, starred: newStarred } : p));
+
+      // Sync to database with auth
+      const headers = { 'Content-Type': 'application/json' };
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
+      await fetch(
+        `${apiBase}/api/problem-status/star/${user.id}/${problemId}`,
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ starred: newStarred })
+        }
+      );
+
+      // Update status map
+      setUserStatusMap(prev => ({
+        ...prev,
+        [problemId]: { ...prev[problemId], starred: newStarred }
+      }));
+    } catch (err) {
+      console.error('Error toggling star:', err);
+      // Revert UI on error
+      setProblems(prev => prev.map(p => p.id === problemId ? { ...p, starred: !p.starred } : p));
+    }
   };
 
   const shuffleProblems = () => {

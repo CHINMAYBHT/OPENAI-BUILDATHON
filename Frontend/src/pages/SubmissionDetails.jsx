@@ -247,173 +247,173 @@ function SubmissionDetails() {
               Back to submissions
             </Link>
 
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              {submission.problems?.title || `Problem ${submission.problem_id}`}
-            </h1>
-            <p className="text-gray-600 mb-4">
-              {submission.problems?.description ? submission.problems.description.substring(0, 100) + '...' : ''}
-            </p>
-          </div>
+            <div className="flex justify-between items-start">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  {submission.problems?.title || `Problem ${submission.problem_id}`}
+                </h1>
+                <p className="text-gray-600 mb-4">
+                  {submission.problems?.description ? submission.problems.description.substring(0, 100) + '...' : ''}
+                </p>
+              </div>
 
-          <div className={`inline-flex items-center space-x-2 px-4 py-2 rounded-lg font-medium ${getStatusColor(submission.final_status)}`}>
-            <FontAwesomeIcon
-              icon={submission.final_status === 'passed' ? faCheck : (submission.final_status === 'failed' ? faTimes : faPlay)}
-              className="text-sm"
-            />
-            <span className="capitalize">{submission.final_status}</span>
-          </div>
-        </div>
+              <div className={`inline-flex items-center space-x-2 px-4 py-2 rounded-lg font-medium ${getStatusColor(submission.final_status)}`}>
+                <FontAwesomeIcon
+                  icon={submission.final_status === 'passed' ? faCheck : (submission.final_status === 'failed' ? faTimes : faPlay)}
+                  className="text-sm"
+                />
+                <span className="capitalize">{submission.final_status}</span>
+              </div>
+            </div>
 
-        {/* Submission metadata */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
-          <div>
-            <div className="text-sm text-gray-600">Language</div>
-            <div className="font-medium">{submission.languages?.name || submission.language}</div>
-          </div>
-          <div>
-            <div className="text-sm text-gray-600">Submitted</div>
-            <div className="font-medium" title={formatDate(submission.created_at)}>
-              <FontAwesomeIcon icon={faCalendar} className="mr-1" />
-              {formatDate(submission.created_at)}
+            {/* Submission metadata */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+              <div>
+                <div className="text-sm text-gray-600">Language</div>
+                <div className="font-medium">{submission.languages?.name || submission.language}</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-600">Submitted</div>
+                <div className="font-medium" title={formatDate(submission.created_at)}>
+                  <FontAwesomeIcon icon={faCalendar} className="mr-1" />
+                  {formatDate(submission.created_at)}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-600">Time Taken</div>
+                <div className="font-medium">
+                  <FontAwesomeIcon icon={faClock} className="mr-1" />
+                  {formatDuration(submission.total_time_ms)}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-600">Tests Passed</div>
+                <div className="font-medium">
+                  {submission.passed_count || 0} / {submission.total_tests || 0}
+                </div>
+              </div>
             </div>
           </div>
-          <div>
-            <div className="text-sm text-gray-600">Time Taken</div>
-            <div className="font-medium">
-              <FontAwesomeIcon icon={faClock} className="mr-1" />
-              {formatDuration(submission.total_time_ms)}
-            </div>
-          </div>
-          <div>
-            <div className="text-sm text-gray-600">Tests Passed</div>
-            <div className="font-medium">
-              {submission.passed_count || 0} / {submission.total_tests || 0}
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Code Section */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Submitted Code</h2>
-        <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-          <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-            <span className="text-sm font-medium text-gray-700">
-              {submission.languages?.name || submission.language}
+          {/* Code Section */}
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Submitted Code</h2>
+            <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+              <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                <span className="text-sm font-medium text-gray-700">
+                  {submission.languages?.name || submission.language}
+                </span>
+              </div>
+              <Editor
+                height="500px"
+                language={submission.language || 'javascript'}
+                value={submission.code || ''}
+                theme="vs-light"
+                options={{
+                  readOnly: true,
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  wordWrap: 'on',
+                  automaticLayout: true,
+                  tabSize: 2,
+                  insertSpaces: true,
+                  folding: true,
+                  lineNumbers: 'on',
+                  renderLineHighlight: 'all'
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Test Results */}
+          {submission.submission_results && submission.submission_results.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Test Results</h2>
+              <div className="space-y-4">
+                {submission.submission_results.map((result, index) => (
+                  <div key={result.id || index} className="border border-gray-200 rounded-lg p-5 bg-white">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold text-lg">Test Case {index + 1}</h3>
+                      <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium ${result.passed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        <FontAwesomeIcon
+                          icon={result.passed ? faCheck : faTimes}
+                          className="text-xs"
+                        />
+                        <span>{result.passed ? 'Passed' : 'Failed'}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-2">Input</h4>
+                        <pre className="bg-gray-50 p-4 rounded-lg text-sm overflow-x-auto border border-gray-200">
+                          {result.input || 'N/A'}
+                        </pre>
+                      </div>
+
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-2">Expected Output</h4>
+                        <pre className="bg-gray-50 p-4 rounded-lg text-sm overflow-x-auto border border-gray-200">
+                          {result.expected_output || 'N/A'}
+                        </pre>
+                      </div>
+                    </div>
+
+                    <div className="mt-6">
+                      <h4 className="font-medium text-gray-900 mb-2">Your Output</h4>
+                      <pre className={`p-4 rounded-lg text-sm overflow-x-auto border ${result.passed ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                        {result.actual_output || 'N/A'}
+                      </pre>
+                    </div>
+
+                    <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+                      <div className="flex items-center space-x-4">
+                        <span>Runtime: {result.time_ms}ms</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Performance Metrics */}
+          {(submission.readability_score || submission.maintainability_score) && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Performance Metrics</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
+                  <h3 className="font-semibold text-blue-900 mb-2">Readability Score</h3>
+                  <div className="text-3xl font-bold text-blue-600">
+                    {submission.readability_score || 'N/A'}
+                  </div>
+                  <p className="text-blue-700 text-sm mt-1">Code clarity and structure</p>
+                </div>
+
+                <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg border border-green-200">
+                  <h3 className="font-semibold text-green-900 mb-2">Maintainability Score</h3>
+                  <div className="text-3xl font-bold text-green-600">
+                    {submission.maintainability_score || 'N/A'}
+                  </div>
+                  <p className="text-green-700 text-sm mt-1">Code maintainability</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex justify-between items-center pt-6 border-t border-gray-200">
+            <Link
+              to={`/coding/problem/${submission.problem_id}`}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              View Problem Again
+            </Link>
+
+            <span className="text-sm text-gray-500">
+              Submission ID: {submission.id}
             </span>
           </div>
-          <Editor
-            height="500px"
-            language={submission.language || 'javascript'}
-            value={submission.code || ''}
-            theme="vs-light"
-            options={{
-              readOnly: true,
-              minimap: { enabled: false },
-              scrollBeyondLastLine: false,
-              wordWrap: 'on',
-              automaticLayout: true,
-              tabSize: 2,
-              insertSpaces: true,
-              folding: true,
-              lineNumbers: 'on',
-              renderLineHighlight: 'all'
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Test Results */}
-      {submission.submission_results && submission.submission_results.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Test Results</h2>
-          <div className="space-y-4">
-            {submission.submission_results.map((result, index) => (
-              <div key={result.id || index} className="border border-gray-200 rounded-lg p-5 bg-white">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-lg">Test Case {index + 1}</h3>
-                  <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium ${result.passed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                    <FontAwesomeIcon
-                      icon={result.passed ? faCheck : faTimes}
-                      className="text-xs"
-                    />
-                    <span>{result.passed ? 'Passed' : 'Failed'}</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Input</h4>
-                    <pre className="bg-gray-50 p-4 rounded-lg text-sm overflow-x-auto border border-gray-200">
-                      {result.input || 'N/A'}
-                    </pre>
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Expected Output</h4>
-                    <pre className="bg-gray-50 p-4 rounded-lg text-sm overflow-x-auto border border-gray-200">
-                      {result.expected_output || 'N/A'}
-                    </pre>
-                  </div>
-                </div>
-
-                <div className="mt-6">
-                  <h4 className="font-medium text-gray-900 mb-2">Your Output</h4>
-                  <pre className={`p-4 rounded-lg text-sm overflow-x-auto border ${result.passed ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                    {result.actual_output || 'N/A'}
-                  </pre>
-                </div>
-
-                <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
-                  <div className="flex items-center space-x-4">
-                    <span>Runtime: {result.time_ms}ms</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Performance Metrics */}
-      {(submission.readability_score || submission.maintainability_score) && (
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Performance Metrics</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
-              <h3 className="font-semibold text-blue-900 mb-2">Readability Score</h3>
-              <div className="text-3xl font-bold text-blue-600">
-                {submission.readability_score || 'N/A'}
-              </div>
-              <p className="text-blue-700 text-sm mt-1">Code clarity and structure</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg border border-green-200">
-              <h3 className="font-semibold text-green-900 mb-2">Maintainability Score</h3>
-              <div className="text-3xl font-bold text-green-600">
-                {submission.maintainability_score || 'N/A'}
-              </div>
-              <p className="text-green-700 text-sm mt-1">Code maintainability</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Action Buttons */}
-      <div className="flex justify-between items-center pt-6 border-t border-gray-200">
-        <Link
-          to={`/coding/problem/${submission.problem_id}`}
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          View Problem Again
-        </Link>
-
-        <span className="text-sm text-gray-500">
-          Submission ID: {submission.id}
-        </span>
-      </div>
         </div>
       </main>
     </div>

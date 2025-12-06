@@ -321,7 +321,9 @@ Analyze the provided code and return a JSON object with the following structure:
 
 {
   "readability_score": <number 1-10>,
+  "readability_justification": "<brief explanation of why you gave this score>",
   "maintainability_score": <number 1-10>,
+  "maintainability_justification": "<brief explanation of why you gave this score>",
   "strengths": [<array of 3-5 strings>],
   "weaknesses": [<array of 2-4 areas for improvement>],
   "interview_perspective": [<array of 2-3 strings on interview context>],
@@ -335,8 +337,8 @@ STRICT RULES:
 - NEVER add explanatory text outside the JSON structure
 - Return ONLY the JSON object, nothing else
 - Scores: Whole numbers 1-10 (10 being best)
-- Readability: Focus on naming, structure, clarity
-- Maintainability: Focus on modularity, documentation, future changes
+- Readability: Focus on naming, structure, clarity. Justification should explain variable/function naming quality, code structure, and overall clarity
+- Maintainability: Focus on modularity, documentation, future changes. Justification should explain code organization, reusability, and documentation level
 - Strengths/weaknesses/interview_perspective: Be specific and actionable
 - Critical issues: Only major problems that would fail interviews
 - Keep all text concise but helpful`;
@@ -375,7 +377,9 @@ Provide comprehensive analysis in the specified JSON format.
       // Fallback structure
       reviewData = {
         readability_score: 7,
+        readability_justification: "Code structure is clear but variable naming could be more descriptive",
         maintainability_score: 6,
+        maintainability_justification: "Code lacks documentation and could benefit from better modularity",
         strengths: ["Code compiles and runs"],
         weaknesses: ["AI analysis failed - manual review needed"],
         interview_perspective: ["Needs technical assessment"],
@@ -429,7 +433,9 @@ Analyze the provided code and return a JSON object with the following structure:
 
 {
   "readability_score": <number 1-10>,
+  "readability_justification": "<brief explanation of why you gave this score>",
   "maintainability_score": <number 1-10>,
+  "maintainability_justification": "<brief explanation of why you gave this score>",
   "strengths": [<array of 3-5 strings>],
   "weaknesses": [<array of 2-4 areas for improvement>],
   "interview_perspective": [<array of 2-3 strings on interview context>],
@@ -443,8 +449,8 @@ STRICT RULES:
 - NEVER add explanatory text outside the JSON structure
 - Return ONLY the JSON object, nothing else
 - Scores: Whole numbers 1-10 (10 being best)
-- Readability: Focus on naming, structure, clarity
-- Maintainability: Focus on modularity, documentation, future changes
+- Readability: Focus on naming, structure, clarity. Justification should explain variable/function naming quality, code structure, and overall clarity
+- Maintainability: Focus on modularity, documentation, future changes. Justification should explain code organization, reusability, and documentation level
 - Strengths/weaknesses/interview_perspective: Be specific and actionable
 - Critical issues: Only major problems that would fail interviews
 - Keep all text concise but helpful`;
@@ -481,7 +487,9 @@ Provide comprehensive analysis in the specified JSON format.
       console.error("Failed to parse AI response as JSON:", responseText);
       aiReview = {
         readability_score: 7,
+        readability_justification: "Code structure is clear but variable naming could be more descriptive",
         maintainability_score: 6,
+        maintainability_justification: "Code lacks documentation and could benefit from better modularity",
         strengths: ["Code compiles and runs"],
         weaknesses: ["AI analysis failed - manual review needed"],
         interview_perspective: ["Needs technical assessment"],
@@ -500,6 +508,8 @@ Provide comprehensive analysis in the specified JSON format.
         interview_perspective: aiReview.interview_perspective || [],
         critical_issues: aiReview.critical_issues || [],
         suggestions: aiReview.suggestions || '',
+        readability_justification: aiReview.readability_justification || '',
+        maintainability_justification: aiReview.maintainability_justification || '',
         raw_ai_response: JSON.stringify(aiReview)
       })
       .select()
@@ -523,7 +533,9 @@ Provide comprehensive analysis in the specified JSON format.
         passed_count: passed_count || 0,
         total_tests: total_tests || 0,
         readability_score: aiReview.readability_score || null,
+        readability_justification: aiReview.readability_justification || '',
         maintainability_score: aiReview.maintainability_score || null,
+        maintainability_justification: aiReview.maintainability_justification || '',
         ai_review_id: aiReviewRecord.id
       })
       .select()

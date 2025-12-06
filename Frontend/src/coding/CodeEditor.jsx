@@ -57,6 +57,7 @@ function CodeEditor() {
   const [liked, setLiked] = useState(false);
   const [starred, setStarred] = useState(false);
   const [showTags, setShowTags] = useState(false);
+  const [problemStatus, setProblemStatus] = useState('unsolved'); // 'unsolved', 'attempted', 'solved'
   // Hints and companies are shown by default (toggle buttons removed)
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [solvedProblems, setSolvedProblems] = useState(new Set());
@@ -249,6 +250,122 @@ function CodeEditor() {
     return () => { mounted = false; };
   }, [id]);
 
+  // Load user's problem status (starred, liked, saved, status, etc.)
+  useEffect(() => {
+    let mounted = true;
+    const loadProblemStatus = async () => {
+      try {
+        const { supabase } = await import('../utils/supabase');
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user || !currentProblem?.id) return;
+
+        const response = await fetch(
+          `${apiBase}/api/problem-status/status/${user.id}/${currentProblem.id}`
+        );
+        const statusData = await response.json();
+
+        if (mounted) {
+          setStarred(statusData.starred || false);
+          setLiked(statusData.liked || false);
+          setProblemStatus(statusData.status || 'unsolved');
+        }
+      } catch (err) {
+        console.error('Error loading problem status:', err);
+      }
+    };
+
+    loadProblemStatus();
+    return () => { mounted = false; };
+  }, [currentProblem?.id, apiBase]);
+
+  // Sync starred status to database
+  useEffect(() => {
+    const syncStarred = async () => {
+      try {
+        const { supabase } = await import('../utils/supabase');
+        const { data: { user }, data: { session } } = await supabase.auth.getUser();
+
+        if (!user || !currentProblem?.id) return;
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (session?.access_token) {
+          headers['Authorization'] = `Bearer ${session.access_token}`;
+        }
+
+        await fetch(
+          `${apiBase}/api/problem-status/star/${user.id}/${currentProblem.id}`,
+          {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ starred })
+          }
+        );
+      } catch (err) {
+        console.error('Error syncing starred status:', err);
+      }
+    };
+
+    // Only sync if we have a valid problem
+    if (currentProblem?.id) {
+      syncStarred();
+    }
+  }, [starred, currentProblem?.id, apiBase]);
+
+  // Sync liked status to database
+  useEffect(() => {
+    const syncLiked = async () => {
+      try {
+        const { supabase } = await import('../utils/supabase');
+        const { data: { user }, data: { session } } = await supabase.auth.getUser();
+
+        if (!user || !currentProblem?.id) return;
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (session?.access_token) {
+          headers['Authorization'] = `Bearer ${session.access_token}`;
+        }
+
+        await fetch(
+          `${apiBase}/api/problem-status/like/${user.id}/${currentProblem.id}`,
+          {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ liked })
+          }
+        );
+      } catch (err) {
+        console.error('Error syncing liked status:', err);
+      }
+    };
+
+    // Only sync if we have a valid problem
+    if (currentProblem?.id) {
+      syncLiked();
+    }
+  }, [liked, currentProblem?.id, apiBase]);
+
+  // Update problem status when submission succeeds - will be called in submitCode
+  const updateProblemStatusOnSuccess = async () => {
+    try {
+      const { supabase } = await import('../utils/supabase');
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user || !currentProblem?.id) return;
+
+      await fetch(
+        `${apiBase}/api/problem-status/status/${user.id}/${currentProblem.id}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'solved' })
+        }
+      );
+    } catch (err) {
+      console.error('Error updating problem status:', err);
+    }
+  };
+
   // Application-level view (interview-style) - hardcoded for now, will be AI-generated later
   // No hardcoded applicationLevelData - always use real DB or AI-generated data
 
@@ -351,27 +468,27 @@ function CodeEditor() {
       return;
     }
 
-  const problemId = currentProblem?.id || currentProblem?.slug || id;
-  const storageKey = `code-${problemId}-${selectedLanguage}`;
-  const storedCode = localStorage.getItem(storageKey);
+    const problemId = currentProblem?.id || currentProblem?.slug || id;
+    const storageKey = `code-${problemId}-${selectedLanguage}`;
+    const storedCode = localStorage.getItem(storageKey);
 
-  // Prefer stored user progress over fresh DB boilerplate
-  // Only use template if no stored code exists
-  const dbTemplate = languages[selectedLanguage]?.template || '';
+    // Prefer stored user progress over fresh DB boilerplate
+    // Only use template if no stored code exists
+    const dbTemplate = languages[selectedLanguage]?.template || '';
 
-  if (storedCode) {
-    // Load user's saved code when available
-    console.log(`Loading stored code for ${selectedLanguage}:`, storedCode.substring(0, 100) + '...');
-    setCode(storedCode);
-  } else if (dbTemplate) {
-    // Fallback to DB boilerplate if no stored code
-    console.log(`No stored code found. Loading DB boilerplate for ${selectedLanguage}:`, dbTemplate.substring(0, 100) + '...');
-    setCode(dbTemplate);
-  } else {
-    // Nothing available - start empty
-    console.log(`No stored code or boilerplate found for ${selectedLanguage}, starting with empty code`);
-    setCode('');
-  }
+    if (storedCode) {
+      // Load user's saved code when available
+      console.log(`Loading stored code for ${selectedLanguage}:`, storedCode.substring(0, 100) + '...');
+      setCode(storedCode);
+    } else if (dbTemplate) {
+      // Fallback to DB boilerplate if no stored code
+      console.log(`No stored code found. Loading DB boilerplate for ${selectedLanguage}:`, dbTemplate.substring(0, 100) + '...');
+      setCode(dbTemplate);
+    } else {
+      // Nothing available - start empty
+      console.log(`No stored code or boilerplate found for ${selectedLanguage}, starting with empty code`);
+      setCode('');
+    }
   }, [selectedLanguage, languages, currentProblem, id, boilerplatesLoaded]);
 
   // Load language-specific boilerplates from DB on component mount
@@ -829,20 +946,33 @@ Try going through the problem requirements again and see if you're missing anyth
 
       // Simulate submission
       setTimeout(async () => {
-        // Simulate test results (in real app, this would be based on actual test execution)
-        const mockTestResults = currentProblem.testCases.filter(tc => !tc.hidden).map((testCase, index) => ({
+        // Get fresh session inside setTimeout
+        const { supabase } = await import('../utils/supabase');
+        const { data: { session } } = await supabase.auth.getSession();
+
+        // Use actual test results from testResults state
+        const actualTestResults = testResults.length > 0 ? testResults : currentProblem.testCases.filter(tc => !tc.hidden).map((testCase, index) => ({
           id: index + 1,
           input: testCase.input,
           expectedOutput: testCase.expectedOutput,
-          actualOutput: testCase.expectedOutput, // Simulate passing
-          passed: true, // Simulate success
-          runtime: Math.floor(Math.random() * 50) + 10 + 'ms'
+          actualOutput: '', // No actual output if tests haven't
+          //  been run
+          passed: false, // Default to false if not run
+          runtime: '0ms'
         }));
 
-        // Calculate test pass rate and success
-        const testCasesPassed = mockTestResults.filter(r => r.passed).length;
-        const totalTestCases = mockTestResults.length;
+        // Calculate test pass rate and success based on actual results
+        const testCasesPassed = actualTestResults.filter(r => r.passed).length;
+        const totalTestCases = actualTestResults.length;
         const success = testCasesPassed === totalTestCases;
+
+        // Debug logging
+        console.log('Submit Debug:');
+        console.log('  testResults.length:', testResults.length);
+        console.log('  actualTestResults:', actualTestResults);
+        console.log('  testCasesPassed:', testCasesPassed);
+        console.log('  totalTestCases:', totalTestCases);
+        console.log('  success:', success);
 
         // Prepare results data for navigation
         const submissionData = {
@@ -857,50 +987,54 @@ Try going through the problem requirements again and see if you're missing anyth
 
         if (success) {
           setConsoleOutput(['Submission successful!', 'All test cases passed.', 'Runtime: 92ms', 'Memory: 41.2 MB']);
+        } else {
+          setConsoleOutput(['Submission failed!', 'Some test cases did not pass.', 'Please review your solution.']);
+        }
 
-          // SAVE SUBMISSION TO DATABASE BEFORE NAVIGATING WITH AI REVIEW
-          if (user && currentProblem.id) {
-            const saveSubmissionData = {
-              problem_id: currentProblem.id,
-              user_id: user.id,
-              language: selectedLanguage,
-              code: code,
-              final_status: 'passed',
-              passed_count: testCasesPassed,
-              total_tests: totalTestCases,
-              test_results: mockTestResults.map((result, index) => ({
-                testcase_id: null, // We'll set this later when we have proper testcases
-                passed: result.passed,
-                actual_output: result.actualOutput,
-                expected_output: result.expectedOutput,
-                time_ms: parseInt(result.runtime) || 0
-              })),
-              problem_description: currentProblem.description,
-              test_cases: currentProblem.testCases
-            };
+        // ALWAYS SAVE SUBMISSION TO DATABASE REGARDLESS OF SUCCESS/FAILURE
+        if (user && currentProblem.id) {
+          const saveSubmissionData = {
+            problem_id: currentProblem.id,
+            user_id: user.id,
+            language: selectedLanguage,
+            code: code,
+            final_status: success ? 'passed' : 'failed',
+            passed_count: testCasesPassed,
+            total_tests: totalTestCases,
+            test_results: actualTestResults.map((result, index) => ({
+              testcase_id: null, // We'll set this later when we have proper testcases
+              passed: result.passed,
+              actual_output: result.actualOutput || '',
+              expected_output: result.expectedOutput,
+              time_ms: parseInt(result.runtime) || 0
+            })),
+            problem_description: currentProblem.description,
+            test_cases: currentProblem.testCases
+          };
 
-            try {
-              const saveResponse = await fetch(`${apiBase}/api/gemini/save-submission-with-review`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(saveSubmissionData)
-              });
+          try {
+            const saveResponse = await fetch(`${apiBase}/api/gemini/save-submission-with-review`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(saveSubmissionData)
+            });
 
-              const saveData = await saveResponse.json();
-              if (saveData.success) {
-                console.log('✅ Submission with AI review saved to database:', saveData.submissionId);
-                // Update navigation state with AI review data
-                submissionData.aiReview = saveData.aiReview;
-                submissionData.readability_score = saveData.aiReview?.readability_score || null;
-                submissionData.maintainability_score = saveData.aiReview?.maintainability_score || null;
-              } else {
-                console.error('❌ Failed to save submission:', saveData.error);
-              }
-            } catch (saveErr) {
-              console.error('❌ Error saving submission to database:', saveErr);
+            const saveData = await saveResponse.json();
+            if (saveData.success) {
+              console.log('✅ Submission with AI review saved to database:', saveData.submissionId);
+              // Update navigation state with AI review data
+              submissionData.aiReview = saveData.aiReview;
+              submissionData.readability_score = saveData.aiReview?.readability_score || null;
+              submissionData.maintainability_score = saveData.aiReview?.maintainability_score || null;
+            } else {
+              console.error('❌ Failed to save submission:', saveData.error);
             }
+          } catch (saveErr) {
+            console.error('❌ Error saving submission to database:', saveErr);
           }
+        }
 
+        if (success) {
           // Mark the current problem as solved
           const newSolvedProblems = new Set(solvedProblems);
           newSolvedProblems.add(currentProblem.id);
@@ -910,12 +1044,103 @@ Try going through the problem requirements again and see if you're missing anyth
           // Save to localStorage
           localStorage.setItem('solvedProblems', JSON.stringify([...newSolvedProblems]));
 
-          // Navigate to results page
-          navigate('/submission-results', { state: submissionData });
+          // Update the user_problem_status in database to "solved"
+          if (user) {
+            try {
+              const headers = { 'Content-Type': 'application/json' };
+              if (session?.access_token) {
+                headers['Authorization'] = `Bearer ${session.access_token}`;
+              }
+
+              const statusResponse = await fetch(`${apiBase}/api/problem-status/status/${user.id}/${currentProblem.id}`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ status: 'solved' })
+              });
+
+              if (statusResponse.ok) {
+                console.log('✅ Problem status updated to solved');
+                // Dispatch event to notify other components
+                window.dispatchEvent(new CustomEvent('problemStatusUpdated', {
+                  detail: { problemId: currentProblem.id, status: 'solved' }
+                }));
+              } else {
+                const errorText = await statusResponse.text();
+                console.error('❌ Failed to update problem status:', errorText);
+              }
+            } catch (err) {
+              console.error('Error updating problem status:', err);
+            }
+          }
         } else {
-          setConsoleOutput(['Submission failed!', 'Some test cases did not pass.', 'Please review your solution.']);
           setIsSubmissionSuccessful(false);
+
+          // Update problem status to "attempted" on failed submission
+          console.log('Submission failed, updating status to attempted for problem:', currentProblem.id);
+          if (user) {
+            try {
+              const headers = { 'Content-Type': 'application/json' };
+              if (session?.access_token) {
+                headers['Authorization'] = `Bearer ${session.access_token}`;
+              }
+
+              console.log('Sending attempted status update with headers:', headers);
+              const statusResponse = await fetch(
+                `${apiBase}/api/problem-status/status/${user.id}/${currentProblem.id}`,
+                {
+                  method: 'POST',
+                  headers,
+                  body: JSON.stringify({ status: 'attempted' })
+                }
+              );
+
+              console.log('Status response:', statusResponse.status, statusResponse.statusText);
+              if (statusResponse.ok) {
+                console.log('✅ Problem status updated to attempted');
+                // Dispatch event to notify other components
+                window.dispatchEvent(new CustomEvent('problemStatusUpdated', {
+                  detail: { problemId: currentProblem.id, status: 'attempted' }
+                }));
+              } else {
+                const errorText = await statusResponse.text();
+                console.error('❌ Failed to update problem status to attempted:', statusResponse.status, errorText);
+              }
+            } catch (err) {
+              console.error('Error updating problem status to attempted:', err);
+            }
+          } else {
+            console.log('User not available, skipping status update');
+          }
         }
+
+        // Navigate to results page (regardless of success/failure)
+        navigate('/submission-results', { state: submissionData });
+
+        // Reload problem status after submission to update badge
+        setTimeout(() => {
+          const reloadStatus = async () => {
+            try {
+              const { supabase } = await import('../utils/supabase');
+              const { data: { user } } = await supabase.auth.getUser();
+
+              if (user && currentProblem.id) {
+                const response = await fetch(
+                  `${apiBase}/api/problem-status/status/${user.id}/${currentProblem.id}`
+                );
+                const statusData = await response.json();
+                setProblemStatus(statusData.status || 'unsolved');
+
+                // Dispatch event to notify other components (like CodingProblems) of status change
+                window.dispatchEvent(new CustomEvent('problemStatusUpdated', {
+                  detail: { problemId: currentProblem.id, status: statusData.status || 'unsolved' }
+                }));
+              }
+            } catch (err) {
+              console.error('Error reloading problem status:', err);
+            }
+          };
+          reloadStatus();
+        }, 3000);
 
         setIsSubmitting(false);
       }, 2000);
@@ -1389,10 +1614,16 @@ Try going through the problem requirements again and see if you're missing anyth
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <h1 className="text-2xl font-bold text-gray-900">{currentProblem.number || currentProblem.id}. {currentProblem.title}</h1>
-                  {(solvedProblems.has(currentProblem.number) || solvedProblems.has(currentProblem.id) || isSubmissionSuccessful) && (
+                  {problemStatus === 'solved' && (
                     <span className="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full font-medium flex items-center space-x-1">
                       <FontAwesomeIcon icon={faCheck} className="text-xs" />
                       <span>Solved</span>
+                    </span>
+                  )}
+                  {problemStatus === 'attempted' && (
+                    <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-sm rounded-full font-medium flex items-center space-x-1">
+                      <FontAwesomeIcon icon={faCheck} className="text-xs" />
+                      <span>Attempted</span>
                     </span>
                   )}
                 </div>

@@ -68,22 +68,27 @@ function SubmissionResults() {
   const [currentStatus, setCurrentStatus] = useState('Strengths');
 
   // Get results from navigation state
-  const results = location.state || {
+  const [results, setResults] = useState(location.state || {
     success: true,
-    testCasesPassed: 2,
-    totalTestCases: 3,
+    testCasesPassed: 0,
+    totalTestCases: 0,
     code: '',
     problemId: 1,
     aiReview: null,
     readability_score: null,
     maintainability_score: null
-  };
+  });
 
   useEffect(() => {
     // Check login status
     const user = localStorage.getItem('user');
     setIsLoggedIn(!!user);
-  }, []);
+
+    // Update results when location state changes
+    if (location.state) {
+      setResults(location.state);
+    }
+  }, [location.state]);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -91,58 +96,19 @@ function SubmissionResults() {
   };
 
   // Calculate success rate percentage
-  const successRate = (results.testCasesPassed / results.totalTestCases) * 100;
+  const successRate = results.totalTestCases > 0 ? (results.testCasesPassed / results.totalTestCases) * 100 : 0;
 
-  // Use AI review data from results or fallback to generic
+  // Use AI review data from results with proper defaults
   const aiReview = results.aiReview || {
-    strengths: [
-      "Strong understanding of basic algorithms and data structures",
-      "Good use of Hash Maps for O(1) lookup performance",
-      "Clean code structure with meaningful variable names",
-      "Efficient space complexity considerations",
-      "Proper input validation and edge case handling"
-    ],
-    weaknesses: [
-      "Optimize inner loop to reduce time complexity from O(n²) to O(n) - Consider using a HashSet for O(1) lookups instead of nested loops",
-      "Add early return statements for invalid inputs to improve code readability and performance",
-      "Consider using more descriptive variable names throughout the solution",
-      "Add unit tests for all edge cases, especially empty arrays and single elements",
-      "Missing comprehensive error handling for edge cases - implement proper null/undefined checks",
-      "Include JSDoc comments for better documentation and maintainability"
-    ],
-    interview_perspective: [
-      "You demonstrated solid problem-solving skills with a working solution. The interviewer would appreciate your clear thinking and structured approach, though they might ask about optimization opportunities.",
-      "Shows good foundation in algorithm implementation, needs optimization focus"
-    ],
-    critical_issues: results.success
-      ? []
-      : ["Logic errors in edge case handling", "Incorrect time/space complexity", "Algorithm doesn't handle all edge cases properly, specifically: empty arrays, single elements, and negative numbers."],
-    readability_score: results.readability_score || (results.success ? 8.5 : 6.2),
-    maintainability_score: results.maintainability_score || (results.success ? 8.0 : 5.8),
-    suggestions: `The primary suggestion is to implement the actual solution to the Maximum Subarray problem. This typically involves using Kadane's algorithm for optimal efficiency.
-
-The function solve should accept the nums array as an argument and return the maximum sum.
-
-Example:
-\`\`\`javascript
-function maxSubArray(nums) {
-    if (!nums || nums.length === 0) {
-        return 0; // Or throw an error, depending on requirements
-    }
-
-    let maxSoFar = nums[0];
-    let currentMax = nums[0];
-
-    for (let i = 1; i < nums.length; i++) {
-        currentMax = Math.max(nums[i], currentMax + nums[i]);
-        maxSoFar = Math.max(maxSoFar, currentMax);
-    }
-
-    return maxSoFar;
-}
-\`\`\`
-
-Also, consider adding comments to explain complex parts of the logic and ensure variable names are descriptive.`,
+    strengths: [],
+    weaknesses: [],
+    interview_perspective: [],
+    critical_issues: [],
+    readability_score: results.readability_score || 0,
+    maintainability_score: results.maintainability_score || 0,
+    readability_justification: '',
+    maintainability_justification: '',
+    suggestions: ''
   };
 
   const statusOptions = ['Strengths', 'Interview Perspective', 'Improvement Areas', 'Issues Found'];
@@ -377,6 +343,34 @@ Also, consider adding comments to explain complex parts of the logic and ensure 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               <table className="w-full">
                 <tbody>
+                  {/* Readability Justification Row */}
+                  {aiReview.readability_justification && (
+                    <tr className="border-b border-gray-100">
+                      <td className="px-6 py-4 bg-cyan-50 font-semibold text-cyan-900 w-1/4 border-r border-cyan-200">
+                        Readability Analysis
+                      </td>
+                      <td className="px-6 py-4 bg-cyan-50">
+                        <div className="text-sm text-cyan-900 leading-relaxed">
+                          {aiReview.readability_justification}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+
+                  {/* Maintainability Justification Row */}
+                  {aiReview.maintainability_justification && (
+                    <tr className="border-b border-gray-100">
+                      <td className="px-6 py-4 bg-orange-50 font-semibold text-orange-900 border-r border-orange-200">
+                        Maintainability Analysis
+                      </td>
+                      <td className="px-6 py-4 bg-orange-50">
+                        <div className="text-sm text-orange-900 leading-relaxed">
+                          {aiReview.maintainability_justification}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+
                   {/* Strengths Row */}
                   <tr className="border-b border-gray-100">
                     <td className="px-6 py-4 bg-gray-50 font-semibold text-gray-800 w-1/4 border-r border-gray-100">
