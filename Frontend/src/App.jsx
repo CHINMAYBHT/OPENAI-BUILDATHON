@@ -99,15 +99,9 @@ function App() {
       link: "/resume"
     },
     {
-      icon: faBullseye,
-      image: screeningSvg,
-      title: "ATS Optimizer",
-      description: "Analyzes job descriptions and rewrites your resume to match recruiter and ATS expectations perfectly. Get keyword optimization suggestions and formatting improvements that increase your chances of getting noticed."
-    },
-    {
       icon: faBrain,
       image: homeworkSvg,
-      title: "Career Roadmap",
+      title: "Course Roadmap",
       description: "Get personalized skill gap analysis, job role recommendations, and curated course suggestions. Discover which skills employers are looking for in your target role and create a learning path to acquire them."
     },
     {
@@ -127,18 +121,6 @@ function App() {
       image: sharedPng,
       title: "Job Tracker",
       description: "Discover relevant jobs, track applications, organize resumes, and view your job readiness analytics. Never lose track of where you applied or when to follow up with our intelligent application management system."
-    },
-    {
-      icon: faShieldAlt,
-      image: referrelPng,
-      title: "Anti-Ghosting System",
-      description: "Send automatic follow-ups, report ghosting incidents, and view ethical employer scores for transparency. Stay informed about company responsiveness and avoid wasting time on employers with poor communication records."
-    },
-    {
-      icon: faBolt,
-      image: workPng,
-      title: "All-in-One Platform",
-      description: "Replace 5-7 separate tools with one intelligent ecosystem powered by OpenAI for end-to-end career acceleration. Save time and money by managing your entire job search journey from a single dashboard. "
     }
   ];
 

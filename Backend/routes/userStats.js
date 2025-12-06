@@ -77,15 +77,50 @@ router.get('/:user_id', async (req, res) => {
             });
         }
 
-        // Get topics with solved counts
-        const { data: topicData, error: topicError } = await supabase.rpc('get_user_topics', {
-            p_user_id: user_id
-        });
+        // Get topics with solved counts - direct query
+        const { data: topicData, error: topicError } = await supabase
+            .from('user_problem_status')
+            .select('problem_id, problems(topics)')
+            .eq('user_id', user_id)
+            .eq('status', 'solved');
 
         let topics = [];
+
+        // Extract and count solved topics
+        const topicCounts = {};
         if (!topicError && topicData) {
-            topics = topicData;
+            topicData.forEach(item => {
+                if (item.problems && item.problems.topics) {
+                    const problemTopics = item.problems.topics;
+                    problemTopics.forEach(topic => {
+                        topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+                    });
+                }
+            });
         }
+
+        // Get total counts for ALL topics
+        const { data: allProblemsWithTopics } = await supabase
+            .from('problems')
+            .select('topics');
+
+        const totalTopicCounts = {};
+        if (allProblemsWithTopics) {
+            allProblemsWithTopics.forEach(problem => {
+                if (problem.topics) {
+                    problem.topics.forEach(topic => {
+                        totalTopicCounts[topic] = (totalTopicCounts[topic] || 0) + 1;
+                    });
+                }
+            });
+        }
+
+        // Create array with ALL topics, showing 0 for unsolved
+        topics = Object.entries(totalTopicCounts).map(([topic, total_count]) => ({
+            topic,
+            solved_count: topicCounts[topic] || 0,
+            total_count
+        })).sort((a, b) => b.solved_count - a.solved_count || b.total_count - a.total_count);
 
         return res.json({
             success: true,

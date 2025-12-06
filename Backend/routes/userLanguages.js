@@ -37,32 +37,66 @@ router.get('/:user_id', async (req, res) => {
 
 // Helper function to calculate languages from submissions
 async function calculateLanguagesFromSubmissions(supabase, user_id) {
-    const { data: submissions, error } = await supabase
+    // Get user's submissions with passed status
+    const { data: userSubmissions, error: userError } = await supabase
         .from('submissions')
         .select('language, final_status, problem_id')
         .eq('user_id', user_id)
         .eq('final_status', 'passed');
 
-    if (error || !submissions || submissions.length === 0) {
-        return [];
+    // Count unique problems solved per language by user
+    const userLanguageProblems = {};
+    if (!userError && userSubmissions) {
+        userSubmissions.forEach(sub => {
+            if (!sub.language) return;
+
+            if (!userLanguageProblems[sub.language]) {
+                userLanguageProblems[sub.language] = new Set();
+            }
+            userLanguageProblems[sub.language].add(sub.problem_id);
+        });
     }
 
-    // Count unique problems solved per language
-    const languageProblems = {};
-    submissions.forEach(sub => {
-        if (!sub.language) return;
+    // Get ALL distinct languages from submissions table
+    const { data: allLanguages, error: langError } = await supabase
+        .from('submissions')
+        .select('language')
+        .not('language', 'is', null);
 
-        if (!languageProblems[sub.language]) {
-            languageProblems[sub.language] = new Set();
-        }
-        languageProblems[sub.language].add(sub.problem_id);
-    });
+    // Get unique languages and count total problems per language
+    const allLanguageProblems = {};
+    if (!langError && allLanguages) {
+        allLanguages.forEach(sub => {
+            if (sub.language) {
+                allLanguageProblems[sub.language] = true;
+            }
+        });
+    }
 
-    // Convert to array format
-    const languages = Object.entries(languageProblems).map(([language, problemSet]) => ({
+    // Get total problem count for each language
+    const { data: allSubmissions } = await supabase
+        .from('submissions')
+        .select('language, problem_id, final_status')
+        .eq('final_status', 'passed')
+        .not('language', 'is', null);
+
+    const totalLanguageProblems = {};
+    if (allSubmissions) {
+        allSubmissions.forEach(sub => {
+            if (!sub.language) return;
+            if (!totalLanguageProblems[sub.language]) {
+                totalLanguageProblems[sub.language] = new Set();
+            }
+            totalLanguageProblems[sub.language].add(sub.problem_id);
+        });
+    }
+
+    // Create array with ALL languages, showing 0 for unused ones
+    const languages = Object.keys(allLanguageProblems).map(language => ({
         language,
-        solved_count: problemSet.size
-    })).sort((a, b) => b.solved_count - a.solved_count);
+        solved_count: userLanguageProblems[language] ? userLanguageProblems[language].size : 0,
+        total_count: totalLanguageProblems[language] ? totalLanguageProblems[language].size : 0
+    })).sort((a, b) => b.solved_count - a.solved_count || b.total_count - a.total_count);
 
     return languages;
 }

@@ -98,6 +98,16 @@ router.post('/status/:user_id/:problem_id', async (req, res) => {
             return res.status(500).json({ error: "Failed to update status", details: error.message });
         }
 
+        // Sync company progress after status update (don't wait for it)
+        if (status === 'solved' || status === 'attempted') {
+            fetch(`${process.env.API_BASE_URL || 'http://localhost:3000'}/api/company-progress/sync-for-problem/${user_id}/${problem_id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            }).catch(err => {
+                console.error('Background sync company progress failed:', err.message);
+            });
+        }
+
         return res.json({ success: true, message: 'Status updated', data });
 
     } catch (err) {

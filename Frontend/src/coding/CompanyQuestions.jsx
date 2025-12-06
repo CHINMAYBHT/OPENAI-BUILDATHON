@@ -11,7 +11,6 @@ import {
   faCheckCircle,
   faTimesCircle,
   faStar,
-  faBookmark,
   faChartLine,
   faBullseye,
   faGraduationCap,
@@ -37,7 +36,6 @@ function CompanyQuestions() {
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [sortBy, setSortBy] = useState('frequency');
   const [showAnalytics, setShowAnalytics] = useState(false);
-  const [savedToMyPrep, setSavedToMyPrep] = useState(false);
   const [starredQuestions, setStarredQuestions] = useState(new Set());
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
@@ -272,12 +270,6 @@ function CompanyQuestions() {
     }
   };
 
-  const handleSaveToMyPrep = () => {
-    setSavedToMyPrep(true);
-    // Here you would normally save to backend/localStorage
-    setTimeout(() => setSavedToMyPrep(false), 2000);
-  };
-
   const toggleStar = (questionId) => {
     const newStarred = new Set(starredQuestions);
     if (newStarred.has(questionId)) {
@@ -396,13 +388,6 @@ function CompanyQuestions() {
                       Practice from {currentCompany.total_questions || 0} coding questions frequently asked at {currentCompany.name}
                     </p>
                   </div>
-
-                  {/* Add Button */}
-                  <button className="px-3 py-2 mt-5 bg-blue-500 hover:bg-blue-600 text-white rounded-full font-medium transition-all">
-                    <FontAwesomeIcon
-                      icon={faBookmark}
-                    />
-                  </button>
                 </div>
               </div>
 
@@ -677,7 +662,6 @@ function CompanyQuestions() {
                         <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Difficulty</th>
                         <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Topic</th>
                         <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acceptance</th>
-                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Save</th>
                       </tr>
                     </thead>
                     <tbody className="bg-transparent">
@@ -718,16 +702,6 @@ function CompanyQuestions() {
                             <div className="text-sm text-gray-900">
                               {problem.acceptanceRate || 0}%
                             </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <button
-                              onClick={() => toggleStar(problem.id)}
-                              className="hover:scale-110 transition-transform duration-200 text-2xl"
-                            >
-                              <span className={starredQuestions.has(problem.id) ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-400'}>
-                                {starredQuestions.has(problem.id) ? '★' : '☆'}
-                              </span>
-                            </button>
                           </td>
                         </tr>
                       ))}

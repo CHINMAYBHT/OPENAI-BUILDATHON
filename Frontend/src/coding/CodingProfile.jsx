@@ -17,11 +17,10 @@ function CodingProfile() {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState(null);
-  const [starredProblems, setStarredProblems] = useState(new Set([2, 4]));
+  const [starredProblems, setStarredProblems] = useState(new Set());
   const [userLanguages, setUserLanguages] = useState([]);
   const [userStats, setUserStats] = useState(null);
   const [userStreaks, setUserStreaks] = useState(null);
-  const [companyProgress, setCompanyProgress] = useState([]);
   const [username, setUsername] = useState('User');
   const [solvedProblems, setSolvedProblems] = useState([]);
   const [attemptedProblems, setAttemptedProblems] = useState([]);
@@ -85,18 +84,6 @@ function CodingProfile() {
           setCalendarData(calData.calendar);
         }
 
-        // Fetch company progress
-        const { data: companyProgressData } = await supabase
-          .from('user_company_progress')
-          .select('*, companies(name)')
-          .eq('user_id', userId)
-          .order('solved_total', { ascending: false })
-          .limit(6);
-
-        if (companyProgressData) {
-          setCompanyProgress(companyProgressData);
-        }
-
         // Fetch solved problems
         const solvedResponse = await fetch(`${apiBase}/api/user-stats/${userId}/solved`);
         const solvedData = await solvedResponse.json();
@@ -133,13 +120,6 @@ function CodingProfile() {
 
     fetchUserData();
   }, []);
-
-  // Mock data for sheets (keeping this as it's a separate feature)
-  const savedSheets = [
-    { id: 1, title: "Arrays 50", problems: 50, completed: 35 },
-    { id: 2, title: "Strings 30", problems: 30, completed: 22 },
-    { id: 3, title: "Trees 40", problems: 40, completed: 28 }
-  ];
 
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
@@ -319,33 +299,16 @@ function CodingProfile() {
                   <h2 className="text-lg ml-2 font-bold text-gray-900">{username}</h2>
                 </div>
 
-                {/* Languages Stats */}
-                <div className="p-6 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Languages</h3>
-                  <div className="space-y-3">
-                    {userLanguages.length > 0 ? (
-                      userLanguages.map((language, index) => (
-                        <div key={index} className="flex justify-between items-center">
-                          <span className="text-gray-700 font-medium">{language.language}</span>
-                          <span className="text-sm text-gray-500">{language.solved_count} solved</span>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-sm text-gray-500">No languages data yet</div>
-                    )}
-                  </div>
-                </div>
-
                 {/* Topics Stats */}
                 <div className="p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Topics</h3>
-                  <div className="space-y-3">
+                  <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-hide">
                     {topics && topics.length > 0 ? (
-                      topics.slice(0, 6).map((topic, index) => (
+                      topics.map((topic, index) => (
                         <div key={index} className="flex justify-between items-center">
                           <span className="text-gray-700 font-medium">{topic.topic}</span>
                           <span className="text-sm text-gray-500">
-                            {topic.solved_count || topic.count || 0}/{topic.total_count || 0}
+                            {topic.solved_count || 0}/{topic.total_count || 0}
                           </span>
                         </div>
                       ))
@@ -475,17 +438,7 @@ function CodingProfile() {
               </div>
 
               {/* Cards Section */}
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div
-                  onClick={() => setActiveTab(activeTab === 'sheets' ? null : 'sheets')}
-                  className={`p-4 rounded-xl cursor-pointer transition-all ${activeTab === 'sheets' ? 'bg-blue-100 border-2 border-blue-500' : 'bg-blue-200 border border-blue-300 hover:shadow-lg'}`}
-                >
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-900">{savedSheets.length}</div>
-                    <div className="text-xs text-gray-600 mt-1">Saved Sheets</div>
-                  </div>
-                </div>
-
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div
                   onClick={() => setActiveTab(activeTab === 'solved' ? null : 'solved')}
                   className={`p-4 rounded-xl cursor-pointer transition-all ${activeTab === 'solved' ? 'bg-green-100 border-2 border-green-500' : 'bg-green-200 border border-green-300 hover:shadow-lg'}`}
@@ -527,53 +480,8 @@ function CodingProfile() {
                 </div>
               </div>
 
-              {/* Saved Sheets Cards Section */}
-              {activeTab === 'sheets' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-                  {savedSheets.map((sheet, index) => (
-                    <div
-                      key={sheet.id}
-                      onClick={() => console.log(`Clicked sheet: ${sheet.title}`)}
-                      className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 cursor-pointer hover:shadow-xl transition-all hover:scale-105"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                            <span className="text-white font-bold text-lg">{index + 1}</span>
-                          </div>
-                          <h3 className="text-lg font-bold text-gray-900">{sheet.title}</h3>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Total Problems</span>
-                          <span className="text-sm font-semibold text-gray-900">{sheet.problems}</span>
-                        </div>
-
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Completed</span>
-                          <span className="text-sm font-semibold text-green-600">{sheet.completed}</span>
-                        </div>
-
-                        <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                          <div
-                            className="bg-blue-500 h-2 rounded-full transition-all"
-                            style={{ width: `${(sheet.completed / sheet.problems) * 100}%` }}
-                          ></div>
-                        </div>
-
-                        <div className="text-xs text-gray-500 text-right mt-2">
-                          {Math.round((sheet.completed / sheet.problems) * 100)}% Complete
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
               {/* Table Section */}
-              {activeTab && activeTab !== 'sheets' && (
+              {activeTab && (
                 <div className="bg-white rounded-xl shadow-lg border border-gray-100 mt-6 overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full">
