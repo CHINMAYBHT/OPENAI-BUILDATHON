@@ -32,7 +32,7 @@ function SubmissionHistory() {
   const filterRef = useRef(null);
   const sortRef = useRef(null);
   const navigate = useNavigate();
-  const apiBase = window.location.hostname === 'localhost' ? 'http://localhost:5000' : '';
+  const apiBase = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
   useEffect(() => {
     loadSubmissions();

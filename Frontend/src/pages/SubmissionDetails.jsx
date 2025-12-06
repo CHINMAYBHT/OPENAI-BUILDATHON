@@ -21,7 +21,7 @@ function SubmissionDetails() {
   const [submission, setSubmission] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const apiBase = window.location.hostname === 'localhost' ? 'http://localhost:5000' : '';
+  const apiBase = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 

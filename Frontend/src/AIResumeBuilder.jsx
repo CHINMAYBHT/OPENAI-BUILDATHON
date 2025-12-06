@@ -139,8 +139,9 @@ CRITICAL INSTRUCTIONS:
 
 Return ONLY the HTML code with complete inline CSS styling that fits on ONE page while maintaining professional appearance, no explanations or markdown.`;
 
+            const apiBase = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
             const response = await axios.post(
-                'http://localhost:5000/api/gemini/generate',
+                `${apiBase}/api/gemini/generate`,
                 { prompt }
             );
 

@@ -18,7 +18,15 @@ dotenv.config({ path: '../.env' });
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// CORS configuration - allow all origins for development, restrict in production
+const corsOptions = {
+    origin: process.env.NODE_ENV === 'production'
+        ? process.env.FRONTEND_URL || '*'
+        : '*',
+    credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
