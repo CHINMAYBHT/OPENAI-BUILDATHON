@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Sparkles,
   CheckCircle,
@@ -29,6 +29,7 @@ import sharedPng from './assets/shared.png';
 import workPng from './assets/work.png';
 import './App.css';
 function App() {
+  const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -40,9 +41,22 @@ function App() {
     };
     window.addEventListener('scroll', handleScroll);
 
-    // Check initial login status
-    const user = localStorage.getItem('user');
-    setIsLoggedIn(!!user);
+    // Check authentication status
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const localUser = localStorage.getItem('user');
+
+      if (session?.user || localUser) {
+        setIsLoggedIn(true);
+        if (session?.user) {
+          localStorage.setItem('user', JSON.stringify(session.user));
+        }
+      } else {
+        navigate('/login');
+      }
+    };
+
+    checkAuth();
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -54,6 +68,7 @@ function App() {
       } else if (event === 'SIGNED_OUT') {
         localStorage.removeItem('user');
         setIsLoggedIn(false);
+        navigate('/login');
       }
     });
 
@@ -61,7 +76,7 @@ function App() {
       window.removeEventListener('scroll', handleScroll);
       subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   const handleLogout = async () => {
     try {
@@ -74,11 +89,13 @@ function App() {
       // Clear local storage
       localStorage.removeItem('user');
       setIsLoggedIn(false);
+      navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
       // Even if Supabase logout fails, clear local data
       localStorage.removeItem('user');
       setIsLoggedIn(false);
+      navigate('/login');
     }
   };
 
@@ -116,12 +133,12 @@ function App() {
       title: "Interview Simulator",
       description: "Practice technical and HR rounds with AI-driven simulations and receive instant, actionable feedback. Experience realistic interview scenarios and learn how to articulate your thoughts clearly under pressure."
     },
-    {
-      icon: faChartLine,
-      image: sharedPng,
-      title: "Job Tracker",
-      description: "Discover relevant jobs, track applications, organize resumes, and view your job readiness analytics. Never lose track of where you applied or when to follow up with our intelligent application management system."
-    }
+    // {
+    //   icon: faChartLine,
+    //   image: sharedPng,
+    //   title: "Job Tracker",
+    //   description: "Discover relevant jobs, track applications, organize resumes, and view your job readiness analytics. Never lose track of where you applied or when to follow up with our intelligent application management system."
+    // }
   ];
 
   const problems = [
@@ -161,9 +178,9 @@ function App() {
             <div className="hidden md:flex items-center space-x-8">
               <a href="#home" className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium">Home</a>
               <a href="#features" className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium">Features</a>
-              <a href="#solutions" className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium">Solutions</a>
-              <a href="#impact" className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium">Impact</a>
-              <a href="#pricing" className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium">Pricing</a>
+              <a href="#problems" className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium">Solutions</a>
+              <a href="#market-demand" className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium">Market</a>
+              <Link to="/pricing" className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium">Pricing</Link>
               {isLoggedIn ? (
                 <button
                   onClick={handleLogout}
@@ -197,9 +214,9 @@ function App() {
             <div className="px-4 py-4 space-y-3">
               <a href="#home" className="block text-gray-600 hover:text-gray-900 transition-colors font-medium py-2">Home</a>
               <a href="#features" className="block text-gray-600 hover:text-gray-900 transition-colors font-medium py-2">Features</a>
-              <a href="#solutions" className="block text-gray-600 hover:text-gray-900 transition-colors font-medium py-2">Solutions</a>
-              <a href="#impact" className="block text-gray-600 hover:text-gray-900 transition-colors font-medium py-2">Impact</a>
-              <a href="#pricing" className="block text-gray-600 hover:text-gray-900 transition-colors font-medium py-2">Pricing</a>
+              <a href="#problems" className="block text-gray-600 hover:text-gray-900 transition-colors font-medium py-2">Solutions</a>
+              <a href="#market-demand" className="block text-gray-600 hover:text-gray-900 transition-colors font-medium py-2">Market</a>
+              <Link to="/pricing" className="block text-gray-600 hover:text-gray-900 transition-colors font-medium py-2">Pricing</Link>
               {isLoggedIn ? (
                 <button
                   onClick={handleLogout}
@@ -225,9 +242,9 @@ function App() {
         <div className="max-w-full mx-auto w-full ">
           <div className="relative overflow-hidden">
             {/* Slide 1 */}
-            <div className={`grid lg:grid-cols-2 gap-16 items-center transition-transform duration-500 ease-in-out ${currentSlide === 0 ? 'translate-x-0' : currentSlide === 1 ? '-translate-x-full' : 'translate-x-full'}`}>
+            <div className={`grid lg:grid-cols-2 gap-8 items-center transition-transform duration-500 ease-in-out ${currentSlide === 0 ? 'translate-x-0' : currentSlide === 1 ? '-translate-x-full' : 'translate-x-full'}`}>
               {/* Left Content */}
-              <div className="space-y-6 flex flex-col justify-center">
+              <div className="space-y-6 flex flex-col justify-center ml-24">
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-gray-800">
                   AI-Powered Career Platform{' '}
                   <span className="gradient-text">From Resume to Hired</span>
@@ -236,15 +253,15 @@ function App() {
                   Your complete job search companion powered by OpenAI. Build resumes, practice interviews, track applications, and land your dream job.
                 </p>
                 <div className="pt-4">
-                  <button className="bg-primary-500 hover:bg-primary-600 text-white px-7 py-3 rounded-lg font-semibold text-sm hover:shadow-lg transition-all duration-300 inline-flex items-center">
+                  <a href="#features" className="bg-primary-500 hover:bg-primary-600 text-white px-7 py-3 rounded-lg font-semibold text-sm hover:shadow-lg transition-all duration-300 inline-flex items-center">
                     Get Started
                     <ArrowRight className="ml-2 w-4 h-4" />
-                  </button>
+                  </a>
                 </div>
               </div>
 
               {/* Right Illustration */}
-              <div className="relative flex justify-center lg:justify-end">
+              <div className="relative flex justify-center lg:justify-start ml-28">
                 <img
                   src="/hero-illustration.png"
                   alt="Job Builder Platform Illustration"
@@ -265,7 +282,7 @@ function App() {
               </div>
 
               {/* Right Content - Text */}
-              <div className="space-y-6 flex flex-col justify-center">
+              <div className="space-y-6 flex flex-col justify-center mr-10">
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-gray-800">
                   Smart Resume Builder{' '}
                   <span className="gradient-text">ATS-Optimized</span>
@@ -274,10 +291,10 @@ function App() {
                   Create professional, ATS-friendly resumes with AI-powered suggestions. Match job descriptions perfectly and get past automated filters.
                 </p>
                 <div className="pt-4">
-                  <button className="bg-primary-500 hover:bg-primary-600 text-white px-7 py-3 rounded-lg font-semibold text-sm hover:shadow-lg transition-all duration-300 inline-flex items-center">
+                  <Link to="/ai-resume" className="bg-primary-500 hover:bg-primary-600 text-white px-7 py-3 rounded-lg font-semibold text-sm hover:shadow-lg transition-all duration-300 inline-flex items-center">
                     Build Resume
                     <ArrowRight className="ml-2 w-4 h-4" />
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -397,34 +414,34 @@ function App() {
           <div className="space-y-4 max-w-5xl mx-auto">
             {[
               {
-                problem: "ATS Rejections",
-                problemDesc: "Most resumes never reach humans due to poor formatting or missing keywords",
-                solution: "AI Resume Builder & ATS Optimizer",
-                solutionDesc: "Create ATS-friendly resumes with AI-powered keyword optimization"
+                problem: "Manual Resume Creation",
+                problemDesc: "Creating professional resumes is time-consuming and requires design skills",
+                solution: "AI Resume Builder",
+                solutionDesc: "Upload your details and instantly generate ATS-optimized, professional resumes"
               },
               {
-                problem: "Company Ghosting",
-                problemDesc: "No updates after applying or interviewing leads to frustration",
-                solution: "Anti-Ghosting System",
-                solutionDesc: "Automatic follow-ups and ethical employer transparency scores"
+                problem: "No Coding Feedback",
+                problemDesc: "Practice platforms don't explain why your code fails or how to improve",
+                solution: "AI Code Analysis on Every Run",
+                solutionDesc: "Get instant AI analysis comparing expected vs actual output with detailed feedback on every test run"
+              },
+              {
+                problem: "Theory vs Real-World Gap",
+                problemDesc: "Online assessment questions are application-level while practice problems are basic theory",
+                solution: "Application-Level View Generator",
+                solutionDesc: "Transform any coding problem into real-world application scenarios and modify questions to match interview standards"
+              },
+              {
+                problem: "No Code Quality Feedback",
+                problemDesc: "Platforms only check if code works, not if it's maintainable or readable",
+                solution: "AI Code Review After Submission",
+                solutionDesc: "Receive readability and maintainability scores with detailed feedback on code quality and best practices"
               },
               {
                 problem: "Skill Gaps",
                 problemDesc: "Unclear which skills to learn, courses to take, or roles you're eligible for",
                 solution: "AI Career Roadmap",
                 solutionDesc: "Personalized skill gap analysis with curated course recommendations"
-              },
-              {
-                problem: "Untargeted Applications",
-                problemDesc: "Generic resumes and poor job-role targeting reduce selection chances",
-                solution: "Smart Job Matching",
-                solutionDesc: "AI analyzes your profile and suggests perfect-fit job opportunities"
-              },
-              {
-                problem: "Interview Anxiety",
-                problemDesc: "Lack of practice and feedback before real interviews",
-                solution: "AI Interview Simulator",
-                solutionDesc: "Practice with AI-powered mock interviews and instant feedback"
               }
             ].map((item, index) => (
               <div key={index} className="glass-effect rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300">
@@ -457,6 +474,65 @@ function App() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Future Work Section */}
+          <div className="mt-16">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl md:text-4xl font-bold mb-4">
+                Future <span className="gradient-text">Enhancements</span>
+              </h3>
+              <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+                Upcoming features to further revolutionize your job search
+              </p>
+            </div>
+
+            <div className="space-y-4 max-w-5xl mx-auto">
+              {[
+                {
+                  problem: "Company Ghosting",
+                  problemDesc: "No updates after applying or interviewing leads to frustration",
+                  solution: "Anti-Ghosting System",
+                  solutionDesc: "Automatic follow-ups and ethical employer transparency scores"
+                },
+                {
+                  problem: "Untargeted Applications",
+                  problemDesc: "Generic resumes and poor job-role targeting reduce selection chances",
+                  solution: "Smart Job Matching",
+                  solutionDesc: "AI analyzes your profile and suggests perfect-fit job opportunities"
+                }
+              ].map((item, index) => (
+                <div key={index} className="glass-effect rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300">
+                  <div className="grid md:grid-cols-2">
+                    {/* Problem Side - Left */}
+                    <div className="p-6 bg-red-50 border-r-2 border-red-200">
+                      <div className="flex items-start space-x-3">
+                        <div className="flex-shrink-0 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                          <X className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-lg font-bold text-gray-800 mb-2">{item.problem}</h3>
+                          <p className="text-sm text-gray-600">{item.problemDesc}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Solution Side - Right */}
+                    <div className="p-6 bg-green-50">
+                      <div className="flex items-start space-x-3">
+                        <div className="flex-shrink-0 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                          <CheckCircle className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-lg font-bold text-gray-800 mb-2">{item.solution}</h3>
+                          <p className="text-sm text-gray-600">{item.solutionDesc}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -559,7 +635,7 @@ function App() {
                 {[
                   "Juggling 5-7 different tools and platforms",
                   "70% of resumes rejected by ATS filters",
-                  "Getting ghosted by 40% of employers",
+                  "No realistic interview practice or feedback",
                   "Months of trial-and-error learning",
                   "Generic applications with low success rates",
                   "No feedback on interview performance"
@@ -588,7 +664,7 @@ function App() {
                 {[
                   "All-in-one platform replaces multiple tools",
                   "AI-optimized resumes that beat ATS filters",
-                  "Anti-ghosting system with employer transparency",
+                  "AI-powered interview simulator with real-time feedback",
                   "Personalized learning paths and mentorship",
                   "Targeted applications with 3x higher success",
                   "Real-time AI feedback and improvement suggestions"
@@ -618,33 +694,33 @@ function App() {
                 AI-powered career platform helping you go from resume to hired.
               </p>
             </div>
-            <div className="flex-1 flex flex-col justify-center items-center">
-              <h4 className="font-semibold text-white mb-4">Product</h4>
+            <div className="flex-1 text-center">
+              <h4 className="font-semibold text-white mb-4">Navigate</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-primary-400 transition-colors">Features</a></li>
-                <li><a href="#" className="hover:text-primary-400 transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-primary-400 transition-colors">FAQ</a></li>
+                <li><a href="#home" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-primary-400 transition-colors cursor-pointer">Home</a></li>
+                <li><a href="#features" className="hover:text-primary-400 transition-colors">Features</a></li>
+                <li><Link to="/pricing" className="hover:text-primary-400 transition-colors">Pricing</Link></li>
               </ul>
             </div>
-            <div className="flex-1 flex flex-col justify-center items-center">
-              <h4 className="font-semibold text-white mb-4">Company</h4>
+            <div className="flex-1 text-center">
+              <h4 className="font-semibold text-white mb-4">Features</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-primary-400 transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-primary-400 transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-primary-400 transition-colors">Careers</a></li>
+                <li><Link to="/interview" className="hover:text-primary-400 transition-colors">Interview</Link></li>
+                <li><Link to="/coding" className="hover:text-primary-400 transition-colors">Coding</Link></li>
+                <li><Link to="/career-roadmap" className="hover:text-primary-400 transition-colors">Course</Link></li>
               </ul>
             </div>
-            <div className="flex-1 flex flex-col justify-center items-center">
+            <div className="flex-1 text-center">
               <h4 className="font-semibold text-white mb-4">Legal</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-primary-400 transition-colors">Privacy</a></li>
-                <li><a href="#" className="hover:text-primary-400 transition-colors">Terms</a></li>
-                <li><a href="#" className="hover:text-primary-400 transition-colors">Security</a></li>
+                <li><Link to="/legal#privacy" className="hover:text-primary-400 transition-colors">Privacy</Link></li>
+                <li><Link to="/legal#terms" className="hover:text-primary-400 transition-colors">Terms</Link></li>
+                <li><Link to="/legal#security" className="hover:text-primary-400 transition-colors">Security</Link></li>
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400">
-            <p>&copy; 2025 Job Builder. All rights reserved. Powered by OpenAI.</p>
+            <p>&copy; 2025 Job Builder. All rights reserved. Powered by OpenAI x NextWave.</p>
           </div>
         </div>
       </footer>

@@ -370,7 +370,7 @@ function Login() {
             <form onSubmit={handleSubmit} className="space-y-4 max-w-[90%] mx-4">
               {/* Success Message */}
               {successMessage && (
-                <div className="bg-green-100 border border-green-400 text-green-700 px-3 py-3 rounded-xl text-sm text-center">
+                <div className="text-green-600 px-3 py-3 text-sm text-center font-medium">
                   {successMessage}
                 </div>
               )}

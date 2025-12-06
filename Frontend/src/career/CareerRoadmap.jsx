@@ -156,7 +156,7 @@ function CareerRoadmap() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60000); // Increased timeout for AI
 
-      const response = await fetch('http://localhost:5002/api/gemini/analyze-skill-gap', {
+      const response = await fetch('http://localhost:5000/api/gemini/analyze-skill-gap', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -274,7 +274,6 @@ function CareerRoadmap() {
     yPos += 8;
     doc.setFontSize(10);
     const splitSummary = doc.splitTextToSize(analysisResult.summary, 170);
-    doc.text(splitSummary, 20, yPos);
     doc.text(splitSummary, 20, yPos);
     yPos += splitSummary.length * 5 + 10;
 
@@ -395,26 +394,25 @@ function CareerRoadmap() {
             {/* Header */}
             <div className="text-center mb-12">
               <h1 className="text-5xl font-bold text-gray-900 mb-4">Skill Gap Analyzer</h1>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+              <p className="text-sm text-gray-600 max-w-3xl mx-auto mb-8">
                 Get personalized skill gap analysis, job role recommendations, and curated course suggestions.
-                Discover which skills employers are looking for in your target role and create a learning path to acquire them.
               </p>
 
               {/* Features Grid */}
               <div className="grid md:grid-cols-3 gap-6 text-left max-w-5xl mx-auto mb-12">
                 <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                   <FontAwesomeIcon icon={faTrophy} className="text-xl text-blue-600 mb-2" />
-                  <h3 className="font-bold text-gray-900 text-sm">Skill Gap Analysis</h3>
+                  <h3 className="font-bold text-gray-900 text-lg">Skill Gap Analysis</h3>
                   <p className="text-xs text-gray-600">Identify missing skills from your resume</p>
                 </div>
                 <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                   <FontAwesomeIcon icon={faLightbulb} className="text-xl text-yellow-500 mb-2" />
-                  <h3 className="font-bold text-gray-900 text-sm">Role Recommendations</h3>
+                  <h3 className="font-bold text-gray-900 text-lg">Role Recommendations</h3>
                   <p className="text-xs text-gray-600">Get insights for your target job role</p>
                 </div>
                 <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                   <FontAwesomeIcon icon={faBook} className="text-xl text-purple-600 mb-2" />
-                  <h3 className="font-bold text-gray-900 text-sm">Curated Courses</h3>
+                  <h3 className="font-bold text-gray-900 text-lg">Curated Courses</h3>
                   <p className="text-xs text-gray-600">Best resources to bridge your gaps</p>
                 </div>
               </div>

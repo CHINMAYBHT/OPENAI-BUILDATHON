@@ -26,13 +26,15 @@ import SubmissionDetails from './pages/SubmissionDetails';
 import InterviewSimulator from './pages/InterviewSimulator.jsx';
 import AIResumeBuilder from './AIResumeBuilder.jsx';
 import CareerRoadmap from './career/CareerRoadmap.jsx';
+import PricingPage from './pricing/PricingPage.jsx';
+import Legal from './pages/Legal.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Router>
       <Routes>
-        <Route path="/" element={<App />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/" element={<App />} />
 
         {/* Coding Routes */}
         <Route path="/coding" element={<CodingLanding />} />
@@ -66,6 +68,11 @@ createRoot(document.getElementById('root')).render(
         {/*Interview*/}
         <Route path="/interview" element={<InterviewSimulator />} />
 
+        {/* Pricing */}
+        <Route path="/pricing" element={<PricingPage />} />
+
+        {/* Legal */}
+        <Route path="/legal" element={<Legal />} />
 
       </Routes>
     </Router>

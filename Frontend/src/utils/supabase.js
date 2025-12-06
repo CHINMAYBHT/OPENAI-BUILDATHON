@@ -6,7 +6,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 try {
   // Basic env debug when running in browser devtools
   console.group && console.group('[supabase] env debug');
-  console.log('VITE_SUPABASE_URL =', supabaseUrl);
+  console.log('VITE_SUPABASE_URL =', "");
   console.log('VITE_SUPABASE_ANON_KEY present =', !!supabaseAnonKey);
   console.groupEnd && console.groupEnd();
 } catch (e) {
