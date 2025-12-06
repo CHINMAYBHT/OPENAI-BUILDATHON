@@ -227,7 +227,7 @@ function App() {
             {/* Slide 1 */}
             <div className={`grid lg:grid-cols-2 gap-16 items-center transition-transform duration-500 ease-in-out ${currentSlide === 0 ? 'translate-x-0' : currentSlide === 1 ? '-translate-x-full' : 'translate-x-full'}`}>
               {/* Left Content */}
-              <div className="space-y-6 flex flex-col justify-center ml-20">
+              <div className="space-y-6 flex flex-col justify-center">
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-gray-800">
                   AI-Powered Career Platform{' '}
                   <span className="gradient-text">From Resume to Hired</span>
@@ -244,7 +244,7 @@ function App() {
               </div>
 
               {/* Right Illustration */}
-              <div className="relative flex justify-center lg:justify-end mr-10">
+              <div className="relative flex justify-center lg:justify-end">
                 <img
                   src="/hero-illustration.png"
                   alt="Job Builder Platform Illustration"
@@ -364,7 +364,11 @@ function App() {
                       <span>{feature.title}</span>
                     </Link>
                   ) : feature.title === "AI Resume Builder" ? (
-                    <Link to="/resume" className="w-[70%] bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-3xl font-semibold text-sm transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg">
+                    <Link to="/AI-resume" className="w-[70%] bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-3xl font-semibold text-sm transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg">
+                      <span>{feature.title}</span>
+                    </Link>
+                  ) : feature.title === "Course Roadmap" ? (
+                    <Link to="/career-roadmap" className="w-[70%] bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-3xl font-semibold text-sm transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg">
                       <span>{feature.title}</span>
                     </Link>
                   ) : (

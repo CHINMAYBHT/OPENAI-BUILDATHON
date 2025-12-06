@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mic, MicOff, Volume2, Loader2, CheckCircle, X } from 'lucide-react';
+import { Mic, MicOff, Volume2, Loader2, CheckCircle, X, Home, Play, Square, FileText, Upload, AlertTriangle } from 'lucide-react';
 
 function InterviewSimulator() {
   const [name, setName] = useState('');
@@ -392,11 +392,10 @@ function InterviewSimulator() {
         className={`flex mb-3 ${isAi ? 'justify-start' : 'justify-end'}`}
       >
         <div
-          className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
-            isAi ? 'bg-white text-gray-800' : 'bg-blue-600 text-white'
-          }`}
+          className={`max-w-[75%] rounded-2xl px-4 py-3 text-lg shadow-sm ${isAi ? 'bg-white text-gray-800' : 'bg-blue-600 text-white'
+            }`}
         >
-          <div className="mb-1 text-xs font-semibold opacity-70">
+          <div className="mb-1 text-base font-semibold opacity-70">
             {isAi ? 'Interviewer' : 'You'}
           </div>
           <div className="whitespace-pre-wrap leading-relaxed">{msg.text}</div>
@@ -407,345 +406,401 @@ function InterviewSimulator() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      {/* Top Navigation (re-using Job Builder header style) */}
-      <nav className="fixed top-0 w-full z-50 bg-white shadow-sm border-b">
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 transition-all duration-300 bg-white shadow-sm">
         <div className="w-full px-6 sm:px-8 lg:px-12">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <span className="text-lg font-bold text-gray-800">Job Builder</span>
-              <span className="px-3 py-1 text-xs rounded-full bg-blue-50 text-blue-600 font-semibold">
-                Interview Simulator
-              </span>
+          <div className="flex justify-between items-center h-20">
+            <div className="flex items-center">
+              <span className="text-3xl font-bold text-gray-800">Job Builder</span>
             </div>
 
-            <div className="flex items-center space-x-4">
+            {/* Right side navigation */}
+            <div className="flex items-center space-x-6">
+              {/* Home Button */}
               <Link
                 to="/"
-                className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                className="flex items-center space-x-2 text-lg text-gray-600 hover:text-gray-900 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-gray-100"
               >
-                Home
+                <Home className="w-4 h-4" />
+                <span>Home</span>
               </Link>
             </div>
           </div>
         </div>
       </nav>
 
-      <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto grid lg:grid-cols-3 gap-8">
-          {/* Left: Setup form */}
-          <section className="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col gap-4">
-            <h2 className="text-lg font-semibold text-gray-800 mb-1">
-              Candidate & Role Setup
-            </h2>
-            <p className="text-xs text-gray-500 mb-3">
-              Provide details about yourself and the target role so the AI can tailor the interview.
-            </p>
-
-            {error && (
-              <div className="flex items-start space-x-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-2">
-                <X className="w-3 h-3 mt-0.5" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="block mb-1 font-medium text-gray-700">Your Name</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="e.g. Alex Kumar"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-1 font-medium text-gray-700">Target Job Title</label>
-                <input
-                  type="text"
-                  value={jobTitle}
-                  onChange={(e) => setJobTitle(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="e.g. Senior React Developer"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-1 font-medium text-gray-700">Target Company</label>
-                <input
-                  type="text"
-                  value={company}
-                  onChange={(e) => setCompany(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="e.g. Google, Fintech startup"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-1 font-medium text-gray-700">Mode</label>
-                <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs">
+      {/* Main Content */}
+      <main className="pt-20 pb-8 px-4 sm:px-6 lg:px-8 mt-5">
+        <div className="w-full max-w-4xl mx-auto">
+          {/* Conditional Layout */}
+          {report ? (
+            /* Report Display */
+            <section className="w-full">
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h1 className="text-3xl font-bold text-gray-800">
+                    Interview <span className="gradient-text">Report</span>
+                  </h1>
                   <button
-                    type="button"
-                    onClick={() => setMode('technical')}
-                    className={`flex-1 px-3 py-2 ${
-                      mode === 'technical'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white text-gray-700'
-                    }`}
+                    onClick={() => {
+                      setReport(null);
+                      setIsSessionActive(false);
+                      setMessages([]);
+                    }}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-sm"
                   >
-                    Technical
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMode('behavioral')}
-                    className={`flex-1 px-3 py-2 ${
-                      mode === 'behavioral'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white text-gray-700'
-                    }`}
-                  >
-                    HR / Behavioral
+                    New Interview
                   </button>
                 </div>
-              </div>
 
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block font-medium text-gray-700">Job Description</label>
-                  <label className="text-[11px] text-blue-600 cursor-pointer hover:underline">
-                    Upload PDF
-                    <input
-                      type="file"
-                      accept="application/pdf"
-                      className="hidden"
-                      onChange={(e) => handlePdfUpload(e, 'jd')}
-                    />
-                  </label>
-                </div>
-                {isUploadingJD && (
-                  <p className="text-[11px] text-gray-500 mb-1">Extracting text from PDF...</p>
-                )}
-                <textarea
-                  value={jobDescription}
-                  onChange={(e) => setJobDescription(e.target.value)}
-                  rows={4}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
-                  placeholder="Paste the full job description here or upload a PDF above..."
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block font-medium text-gray-700">Resume / CV</label>
-                  <label className="text-[11px] text-blue-600 cursor-pointer hover:underline">
-                    Upload PDF
-                    <input
-                      type="file"
-                      accept="application/pdf"
-                      className="hidden"
-                      onChange={(e) => handlePdfUpload(e, 'resume')}
-                    />
-                  </label>
-                </div>
-                {isUploadingResume && (
-                  <p className="text-[11px] text-gray-500 mb-1">Extracting text from PDF...</p>
-                )}
-                <textarea
-                  value={resume}
-                  onChange={(e) => setResume(e.target.value)}
-                  rows={6}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
-                  placeholder="Paste your resume or key bullet points here or upload a PDF above..."
-                />
-              </div>
-            </div>
-
-            <div className="mt-3 flex flex-col gap-2">
-              {!hasSpeechSupport && (
-                <p className="text-[11px] text-amber-600 bg-amber-50 border border-amber-200 rounded-md px-2 py-1">
-                  Browser speech recognition is not available. You can still use the simulator by speaking into your mic on supported browsers or by adjusting your setup.
-                </p>
-              )}
-
-              <button
-                type="button"
-                onClick={handleStartInterview}
-                disabled={isLoading}
-                className="w-full inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-3 h-3 mr-2 animate-spin" />
-                    Starting interview...
-                  </>
-                ) : (
-                  'Start Interview'
-                )}
-              </button>
-
-              {isSessionActive && (
-                <button
-                  type="button"
-                  onClick={handleEndInterview}
-                  className="w-full inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 shadow-sm"
-                >
-                  End & Generate Report
-                </button>
-              )}
-            </div>
-          </section>
-
-          {/* Right: Chat + Controls */}
-          <section className="lg:col-span-2 flex flex-col gap-4">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col max-h-[480px]">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h2 className="text-sm font-semibold text-gray-800">Live Interview</h2>
-                  <p className="text-[11px] text-gray-500">
-                    Speak your answers and follow the interviewer\'s questions in real time.
+                {/* Score Section */}
+                <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+                  <h2 className="text-lg font-bold text-gray-800 mb-2">Performance Score</h2>
+                  <div className="text-4xl font-bold text-blue-600">{report.score}/100</div>
+                  <p className="text-sm text-gray-600 mt-2">
+                    {report.score >= 80 && "Excellent performance! You demonstrated strong skills and communication."}
+                    {report.score >= 60 && report.score < 80 && "Good performance! With some practice, you can improve further."}
+                    {report.score >= 40 && report.score < 60 && "Fair performance. Focus on the areas for improvement below."}
+                    {report.score < 40 && "Areas identified for improvement. Review the feedback and practice more."}
                   </p>
                 </div>
 
-                <div className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-1 text-[11px] text-gray-500">
-                    <Volume2 className={`w-3 h-3 ${isAiSpeaking ? 'text-blue-600' : ''}`} />
-                    <span>{isAiSpeaking ? 'AI speaking' : 'Idle'}</span>
-                  </div>
-
-                  <div className="relative w-6 h-6 flex items-center justify-center">
-                    <span
-                      className={`absolute inline-flex h-full w-full rounded-full transition-all duration-300 ${
-                        isRecording ? 'bg-red-200 opacity-70 scale-110' : 'opacity-0 scale-75'
-                      }`}
-                    />
-                    <span
-                      className={`relative inline-flex rounded-full h-3 w-3 ${
-                        isRecording ? 'bg-red-500' : 'bg-gray-300'
-                      }`}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex-1 overflow-y-auto mt-1 mb-3 pr-2 custom-scrollbar">
-                {messages.length === 0 ? (
-                  <div className="h-full flex items-center justify-center text-[11px] text-gray-400">
-                    Start the interview to see the conversation here.
-                  </div>
-                ) : (
-                  messages.map((m, idx) => renderMessage(m, idx))
-                )}
-              </div>
-
-              <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
-                <div className="flex items-center space-x-2 text-[11px] text-gray-500">
-                  <div
-                    className={`flex items-center space-x-1 px-2 py-1 rounded-full border text-[11px] ${
-                      isRecording ? 'border-red-300 bg-red-50 text-red-600' : 'border-gray-200 bg-gray-50'
-                    }`}
-                  >
-                    {isRecording ? (
-                      <>
-                        <MicOff className="w-3 h-3" />
-                        <span>Recording...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Mic className="w-3 h-3" />
-                        <span>Ready</span>
-                      </>
-                    )}
-                  </div>
-                  <span>{hasSpeechSupport ? 'Browser mic enabled' : 'Speech recognition not available'}</span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleToggleRecording}
-                  disabled={!isSessionActive || !hasSpeechSupport || isLoading || isAiSpeaking}
-                  className={`inline-flex items-center px-4 py-1.5 rounded-full text-xs font-semibold shadow-sm border ${
-                    !isSessionActive || !hasSpeechSupport || isLoading || isAiSpeaking
-                      ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                      : isRecording
-                        ? 'bg-red-600 text-white border-red-600 hover:bg-red-700'
-                        : 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
-                  }`}
-                >
-                  {isRecording ? (
-                    <>
-                      <MicOff className="w-3 h-3 mr-1" />
-                      Stop Answer
-                    </>
-                  ) : (
-                    <>
-                      <Mic className="w-3 h-3 mr-1" />
-                      Answer
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {report && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                    </div>
+                {/* Three Column Layout */}
+                <div className="grid grid-cols-3 gap-4">
+                  {/* Positives */}
+                  {report.positives && report.positives.length > 0 && (
                     <div>
-                      <h3 className="text-sm font-semibold text-gray-800">Interview Report Card</h3>
-                      <p className="text-[11px] text-gray-500">
-                        Overall performance score and key feedback points.
-                      </p>
+                      <h3 className="text-lg font-bold text-gray-800 mb-2 flex items-center gap-2">
+                        <CheckCircle className="w-5 h-5 text-green-600" />
+                        Strengths
+                      </h3>
+                      <ul className="space-y-2">
+                        {report.positives.map((positive, idx) => (
+                          <li key={idx} className="flex gap-2 p-2 bg-green-50 border border-green-200 rounded-lg text-xs text-gray-700">
+                            <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                            <span>{positive}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xs text-gray-500 mb-0.5">Score</div>
-                    <div className="text-lg font-bold text-blue-600">
-                      {Math.round(report.score || 0)}/100
+                  )}
+
+                  {/* Negatives */}
+                  {report.negatives && report.negatives.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-800 mb-2 flex items-center gap-2">
+                        <AlertTriangle className="w-5 h-5 text-amber-600" />
+                        Areas for Improvement
+                      </h3>
+                      <ul className="space-y-2">
+                        {report.negatives.map((negative, idx) => (
+                          <li key={idx} className="flex gap-2 p-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-gray-700">
+                            <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                            <span>{negative}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                  </div>
+                  )}
+
+                  {/* Improvements */}
+                  {report.improvements && report.improvements.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-800 mb-2 flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-blue-600" />
+                        Recommendations
+                      </h3>
+                      <ul className="space-y-2">
+                        {report.improvements.map((improvement, idx) => (
+                          <li key={idx} className="flex gap-2 p-2 bg-blue-50 border border-blue-200 rounded-lg text-xs text-gray-700">
+                            <FileText className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                            <span>{improvement}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
+              </div>
+            </section>
+          ) : !isSessionActive ? (
+            /* Setup Interview - Full Width */
+            <section className="w-full">
+              {/* Setup Card */}
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 ">
+                <h1 className="text-4xl font-bold text-gray-800 mb-10 text-center">
+                  Setup <span className="gradient-text ">Interview</span>
+                </h1>
 
-                <div className="grid md:grid-cols-3 gap-4 mt-2">
+
+                {error && (
+                  <div className="flex items-start space-x-2 text-base text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4">
+                    <X className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <h4 className="text-[11px] font-semibold text-green-700 mb-1">Positives</h4>
-                    <ul className="space-y-1 list-disc list-inside text-[11px] text-gray-700">
-                      {report.positives && report.positives.length > 0 ? (
-                        report.positives.slice(0, 5).map((p, idx) => <li key={idx}>{p}</li>)
-                      ) : (
-                        <li>No strengths detected.</li>
-                      )}
-                    </ul>
+                    <label className="block text-base font-semibold text-gray-700 mb-1">Your Name</label>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="e.g. Alex Kumar"
+                    />
                   </div>
 
                   <div>
-                    <h4 className="text-[11px] font-semibold text-red-700 mb-1">Negatives</h4>
-                    <ul className="space-y-1 list-disc list-inside text-[11px] text-gray-700">
-                      {report.negatives && report.negatives.length > 0 ? (
-                        report.negatives.slice(0, 5).map((n, idx) => <li key={idx}>{n}</li>)
-                      ) : (
-                        <li>No major issues detected.</li>
-                      )}
-                    </ul>
+                    <label className="block text-base font-semibold text-gray-700 mb-1">Job Title</label>
+                    <input
+                      type="text"
+                      value={jobTitle}
+                      onChange={(e) => setJobTitle(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="e.g. Senior React Dev"
+                    />
                   </div>
 
                   <div>
-                    <h4 className="text-[11px] font-semibold text-blue-700 mb-1">Areas to Improve</h4>
-                    <ul className="space-y-1 list-disc list-inside text-[11px] text-gray-700">
-                      {report.improvements && report.improvements.length > 0 ? (
-                        report.improvements.slice(0, 5).map((imp, idx) => <li key={idx}>{imp}</li>)
+                    <label className="block text-base font-semibold text-gray-700 mb-1">Company</label>
+                    <input
+                      type="text"
+                      value={company}
+                      onChange={(e) => setCompany(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="e.g. Google"
+                    />
+                  </div>
+
+                  <div className="col-span-3">
+                    <label className="block text-base font-semibold text-gray-700 mb-1">Interview Type</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setMode('technical')}
+                        className={`px-3 py-2 rounded-lg font-medium text-base transition ${mode === 'technical'
+                          ? 'bg-blue-600 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                      >
+                        Technical
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMode('behavioral')}
+                        className={`px-3 py-2 rounded-lg font-medium text-base transition ${mode === 'behavioral'
+                          ? 'bg-blue-600 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                      >
+                        Behavioral
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="col-span-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-base font-semibold text-gray-700">Job Description</label>
+                      <label className="text-base text-blue-600 cursor-pointer hover:text-blue-700 font-semibold flex items-center gap-1">
+                        <Upload className="w-3 h-3" />
+                        Upload PDF
+                        <input
+                          type="file"
+                          accept="application/pdf"
+                          className="hidden"
+                          onChange={(e) => handlePdfUpload(e, 'jd')}
+                        />
+                      </label>
+                    </div>
+                    {isUploadingJD && (
+                      <p className="text-base text-blue-600 mb-1 flex items-center gap-1">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        Extracting text...
+                      </p>
+                    )}
+                    <textarea
+                      value={jobDescription}
+                      onChange={(e) => setJobDescription(e.target.value)}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical overflow-hidden"
+                      placeholder="Paste job description or upload PDF..."
+                    />
+                  </div>
+
+                  <div className="col-span-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-base font-semibold text-gray-700">Resume / CV</label>
+                      <label className="text-base text-blue-600 cursor-pointer hover:text-blue-700 font-semibold flex items-center gap-1">
+                        <Upload className="w-3 h-3" />
+                        Upload PDF
+                        <input
+                          type="file"
+                          accept="application/pdf"
+                          className="hidden"
+                          onChange={(e) => handlePdfUpload(e, 'resume')}
+                        />
+                      </label>
+                    </div>
+                    {isUploadingResume && (
+                      <p className="text-base text-blue-600 mb-1 flex items-center gap-1">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        Extracting text...
+                      </p>
+                    )}
+                    <textarea
+                      value={resume}
+                      onChange={(e) => setResume(e.target.value)}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical overflow-hidden"
+                      placeholder="Paste your resume or upload PDF..."
+                    />
+                  </div>
+
+                  <div className="col-span-3 mt-4">
+                    {!hasSpeechSupport && (
+                      <div className="text-base text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 flex items-center gap-2 mb-3">
+                        <AlertTriangle className="w-3 h-3" />
+                        Browser speech recognition not available
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={handleStartInterview}
+                      disabled={isLoading}
+                      className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition flex items-center justify-center text-lg"
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Starting...
+                        </>
                       ) : (
-                        <li>No suggestions available.</li>
+                        <>
+                          <Play className="w-4 h-4 mr-2" />
+                          Start Interview
+                        </>
                       )}
-                    </ul>
+                    </button>
                   </div>
                 </div>
               </div>
-            )}
-          </section>
+
+
+            </section>
+          ) : (
+            /* Live Interview - Full Width */
+            <section className="w-full space-y-6">
+              {/* Chat Card */}
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden flex flex-col" style={{ minHeight: '600px' }}>
+                {/* Header */}
+                <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-b border-gray-200 px-6 py-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-3xl font-bold text-gray-800">Live Interview</h2>
+                      <p className="text-base text-gray-600 mt-1">Real-time AI interaction</p>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-2">
+                        <Volume2 className={`w-5 h-5 ${isAiSpeaking ? 'text-blue-600 animate-pulse' : 'text-gray-400'}`} />
+                        <span className="text-base font-medium text-gray-700">{isAiSpeaking ? 'Speaking' : 'Idle'}</span>
+                      </div>
+                      <div className={`w-3 h-3 rounded-full ${isRecording ? 'bg-red-500 animate-pulse' : 'bg-gray-300'}`} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Messages */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                  {messages.length === 0 ? (
+                    <div className="h-full flex items-center justify-center text-center text-gray-500">
+                      <div>
+                        <Mic className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                        <p className="font-medium text-xl">Ready to start</p>
+                        <p className="text-lg text-gray-400 mt-1">Click "Start Interview" to begin</p>
+                      </div>
+                    </div>
+                  ) : (
+                    messages.map((m, idx) => renderMessage(m, idx))
+                  )}
+                </div>
+
+                {/* Controls */}
+                <div className="border-t border-gray-200 bg-gray-50 px-6 py-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center space-x-3">
+                      <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-base font-semibold ${isRecording
+                        ? 'bg-red-100 text-red-600 border border-red-200'
+                        : 'bg-green-100 text-green-600 border border-green-200'
+                        }`}>
+                        <span className="w-2 h-2 rounded-full bg-current animate-pulse"></span>
+                        <span>{isRecording ? 'Recording' : 'Ready'}</span>
+                      </div>
+                      <span className="text-base text-gray-600 flex items-center gap-1">
+                        {hasSpeechSupport ? (
+                          <>
+                            <Mic className="w-3 h-3" />
+                            Mic ready
+                          </>
+                        ) : (
+                          <>
+                            <AlertTriangle className="w-3 h-3" />
+                            No speech
+                          </>
+                        )}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleToggleRecording}
+                      disabled={!isSessionActive || !hasSpeechSupport || isLoading || isAiSpeaking}
+                      className={`px-4 py-2 rounded-lg font-semibold text-base transition flex items-center gap-2 ${!isSessionActive || !hasSpeechSupport || isLoading || isAiSpeaking
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : isRecording
+                          ? 'bg-red-600 text-white hover:bg-red-700'
+                          : 'bg-blue-600 text-white hover:bg-blue-700'
+                        }`}
+                    >
+                      {isRecording ? (
+                        <>
+                          <Square className="w-4 h-4" />
+                          Stop
+                        </>
+                      ) : (
+                        <>
+                          <Mic className="w-4 h-4" />
+                          Answer
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* End Interview Button */}
+              <button
+                type="button"
+                onClick={handleEndInterview}
+                disabled={isLoading}
+                className="w-full px-4 py-2 bg-red-50 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed text-red-600 font-semibold rounded-lg border border-red-200 transition flex items-center justify-center text-lg"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating Report...
+                  </>
+                ) : (
+                  <>
+                    <Square className="w-4 h-4 mr-2" />
+                    End & Report
+                  </>
+                )}
+              </button>
+            </section>
+          )}
         </div>
       </main>
     </div>

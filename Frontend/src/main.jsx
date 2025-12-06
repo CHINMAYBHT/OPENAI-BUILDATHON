@@ -17,17 +17,15 @@ import NewMockTestPage from './coding/NewMockTestPage.jsx'
 import TestPage from './coding/TestPage.jsx'
 import TestResults from './coding/TestResults.jsx'
 import TestReview from './coding/TestReview.jsx'
-import ResumeLanding from './resume/ResumeLanding.jsx'
-import ResumeBuilder from './resume/ResumeBuilder.jsx'
-import JobTailoring from './resume/JobTailoring.jsx'
-import ATSChecker from './resume/ATSChecker.jsx'
-import ResumeTemplates from './resume/ResumeTemplates.jsx'
-import SkillGapAnalyzer from './resume/SkillGapAnalyzer.jsx'
+
+
 import SubmissionResults from './pages/SubmissionResults.jsx'
 // In Frontend/src/App.jsx, add these routes:
 import SubmissionHistory from './components/SubmissionHistory';
 import SubmissionDetails from './pages/SubmissionDetails';
 import InterviewSimulator from './pages/InterviewSimulator.jsx';
+import AIResumeBuilder from './AIResumeBuilder.jsx';
+import CareerRoadmap from './career/CareerRoadmap.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -53,14 +51,19 @@ createRoot(document.getElementById('root')).render(
         <Route path="/submission-results" element={<SubmissionResults />} />
 
         {/* Resume Routes */}
-        <Route path="/resume" element={<ResumeLanding />} />
-        <Route path="/resume/builder" element={<ResumeBuilder />} />
-        <Route path="/resume/tailor" element={<JobTailoring />} />
-        <Route path="/resume/ats-check" element={<ATSChecker />} />
-        <Route path="/resume/templates" element={<ResumeTemplates />} />
-        <Route path="/resume/skill-gap" element={<SkillGapAnalyzer />} />
+        <Route path="/ai-resume" element={<AIResumeBuilder />} />
+
+        {/* Career Routes */}
+        <Route path="/career-roadmap" element={<CareerRoadmap />} />
+
+
+
+        {/*Coding submission*/}
         <Route path="/coding/submissions" element={<SubmissionHistory />} />
         <Route path="/coding/submission/:submissionId" element={<SubmissionDetails />} />
+
+
+        {/*Interview*/}
         <Route path="/interview" element={<InterviewSimulator />} />
 
 

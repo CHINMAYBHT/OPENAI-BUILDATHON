@@ -321,9 +321,7 @@ Analyze the provided code and return a JSON object with the following structure:
 
 {
   "readability_score": <number 1-10>,
-  "readability_justification": "<brief explanation of why you gave this score>",
   "maintainability_score": <number 1-10>,
-  "maintainability_justification": "<brief explanation of why you gave this score>",
   "strengths": [<array of 3-5 strings>],
   "weaknesses": [<array of 2-4 areas for improvement>],
   "interview_perspective": [<array of 2-3 strings on interview context>],
@@ -337,8 +335,8 @@ STRICT RULES:
 - NEVER add explanatory text outside the JSON structure
 - Return ONLY the JSON object, nothing else
 - Scores: Whole numbers 1-10 (10 being best)
-- Readability: Focus on naming, structure, clarity. Justification should explain variable/function naming quality, code structure, and overall clarity
-- Maintainability: Focus on modularity, documentation, future changes. Justification should explain code organization, reusability, and documentation level
+- Readability: Focus on naming, structure, clarity
+- Maintainability: Focus on modularity, documentation, future changes
 - Strengths/weaknesses/interview_perspective: Be specific and actionable
 - Critical issues: Only major problems that would fail interviews
 - Keep all text concise but helpful`;
@@ -377,9 +375,7 @@ Provide comprehensive analysis in the specified JSON format.
       // Fallback structure
       reviewData = {
         readability_score: 7,
-        readability_justification: "Code structure is clear but variable naming could be more descriptive",
         maintainability_score: 6,
-        maintainability_justification: "Code lacks documentation and could benefit from better modularity",
         strengths: ["Code compiles and runs"],
         weaknesses: ["AI analysis failed - manual review needed"],
         interview_perspective: ["Needs technical assessment"],
@@ -433,9 +429,7 @@ Analyze the provided code and return a JSON object with the following structure:
 
 {
   "readability_score": <number 1-10>,
-  "readability_justification": "<brief explanation of why you gave this score>",
   "maintainability_score": <number 1-10>,
-  "maintainability_justification": "<brief explanation of why you gave this score>",
   "strengths": [<array of 3-5 strings>],
   "weaknesses": [<array of 2-4 areas for improvement>],
   "interview_perspective": [<array of 2-3 strings on interview context>],
@@ -449,8 +443,8 @@ STRICT RULES:
 - NEVER add explanatory text outside the JSON structure
 - Return ONLY the JSON object, nothing else
 - Scores: Whole numbers 1-10 (10 being best)
-- Readability: Focus on naming, structure, clarity. Justification should explain variable/function naming quality, code structure, and overall clarity
-- Maintainability: Focus on modularity, documentation, future changes. Justification should explain code organization, reusability, and documentation level
+- Readability: Focus on naming, structure, clarity
+- Maintainability: Focus on modularity, documentation, future changes
 - Strengths/weaknesses/interview_perspective: Be specific and actionable
 - Critical issues: Only major problems that would fail interviews
 - Keep all text concise but helpful`;
@@ -487,9 +481,7 @@ Provide comprehensive analysis in the specified JSON format.
       console.error("Failed to parse AI response as JSON:", responseText);
       aiReview = {
         readability_score: 7,
-        readability_justification: "Code structure is clear but variable naming could be more descriptive",
         maintainability_score: 6,
-        maintainability_justification: "Code lacks documentation and could benefit from better modularity",
         strengths: ["Code compiles and runs"],
         weaknesses: ["AI analysis failed - manual review needed"],
         interview_perspective: ["Needs technical assessment"],
@@ -508,8 +500,6 @@ Provide comprehensive analysis in the specified JSON format.
         interview_perspective: aiReview.interview_perspective || [],
         critical_issues: aiReview.critical_issues || [],
         suggestions: aiReview.suggestions || '',
-        readability_justification: aiReview.readability_justification || '',
-        maintainability_justification: aiReview.maintainability_justification || '',
         raw_ai_response: JSON.stringify(aiReview)
       })
       .select()
@@ -533,9 +523,7 @@ Provide comprehensive analysis in the specified JSON format.
         passed_count: passed_count || 0,
         total_tests: total_tests || 0,
         readability_score: aiReview.readability_score || null,
-        readability_justification: aiReview.readability_justification || '',
         maintainability_score: aiReview.maintainability_score || null,
-        maintainability_justification: aiReview.maintainability_justification || '',
         ai_review_id: aiReviewRecord.id
       })
       .select()
@@ -551,93 +539,6 @@ Provide comprehensive analysis in the specified JSON format.
       .from('ai_code_reviews')
       .update({ submission_id: submission.id })
       .eq('id', aiReviewRecord.id);
-
-    // Update user_languages table
-    const isSolved = final_status === 'success';
-    try {
-      const { data: existingLang } = await supabase
-        .from('user_languages')
-        .select('*')
-        .eq('user_id', user_id)
-        .eq('language', language)
-        .single();
-
-      if (existingLang) {
-        // Update existing record - only increment if solved
-        const newCount = isSolved ? (existingLang.solved_count || 0) + 1 : (existingLang.solved_count || 0);
-        await supabase
-          .from('user_languages')
-          .update({ solved_count: newCount })
-          .eq('user_id', user_id)
-          .eq('language', language);
-      } else {
-        // Insert new record
-        await supabase
-          .from('user_languages')
-          .insert({
-            user_id: user_id,
-            language: language,
-            solved_count: isSolved ? 1 : 0
-          });
-      }
-    } catch (langError) {
-      console.error("Error updating user_languages:", langError);
-      // Don't fail the submission if language tracking fails
-    }
-
-    // Update user streak if submission was successful
-    if (isSolved) {
-      try {
-        const today = new Date().toISOString().split('T')[0];
-        const { data: existingStreak } = await supabase
-          .from('user_streaks')
-          .select('*')
-          .eq('user_id', user_id)
-          .single();
-
-        let newCurrentStreak = 1;
-        let newLongestStreak = 1;
-
-        if (existingStreak) {
-          const lastSolvedDate = existingStreak.last_solved_at;
-
-          if (lastSolvedDate !== today) {
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-            if (lastSolvedDate === yesterdayStr) {
-              newCurrentStreak = (existingStreak.current_streak || 0) + 1;
-            } else {
-              newCurrentStreak = 1;
-            }
-
-            newLongestStreak = Math.max(newCurrentStreak, existingStreak.longest_streak || 0);
-
-            await supabase
-              .from('user_streaks')
-              .upsert({
-                user_id: user_id,
-                current_streak: newCurrentStreak,
-                longest_streak: newLongestStreak,
-                last_solved_at: today
-              }, { onConflict: 'user_id' });
-          }
-        } else {
-          await supabase
-            .from('user_streaks')
-            .insert({
-              user_id: user_id,
-              current_streak: 1,
-              longest_streak: 1,
-              last_solved_at: today
-            });
-        }
-      } catch (streakError) {
-        console.error("Error updating user_streaks:", streakError);
-        // Don't fail the submission if streak tracking fails
-      }
-    }
 
     // Save test results if provided
     if (test_results && Array.isArray(test_results)) {
@@ -712,93 +613,6 @@ router.post('/save-submission', async (req, res) => {
     if (submissionError) {
       console.error("Error saving submission:", submissionError);
       return res.status(500).json({ error: "Failed to save submission", details: submissionError.message });
-    }
-
-    // Update user_languages table
-    const isSolved = final_status === 'success';
-    try {
-      const { data: existingLang } = await supabase
-        .from('user_languages')
-        .select('*')
-        .eq('user_id', user_id)
-        .eq('language', language)
-        .single();
-
-      if (existingLang) {
-        // Update existing record - only increment if solved
-        const newCount = isSolved ? (existingLang.solved_count || 0) + 1 : (existingLang.solved_count || 0);
-        await supabase
-          .from('user_languages')
-          .update({ solved_count: newCount })
-          .eq('user_id', user_id)
-          .eq('language', language);
-      } else {
-        // Insert new record
-        await supabase
-          .from('user_languages')
-          .insert({
-            user_id: user_id,
-            language: language,
-            solved_count: isSolved ? 1 : 0
-          });
-      }
-    } catch (langError) {
-      console.error("Error updating user_languages:", langError);
-      // Don't fail the submission if language tracking fails
-    }
-
-    // Update user streak if submission was successful
-    if (isSolved) {
-      try {
-        const today = new Date().toISOString().split('T')[0];
-        const { data: existingStreak } = await supabase
-          .from('user_streaks')
-          .select('*')
-          .eq('user_id', user_id)
-          .single();
-
-        let newCurrentStreak = 1;
-        let newLongestStreak = 1;
-
-        if (existingStreak) {
-          const lastSolvedDate = existingStreak.last_solved_at;
-
-          if (lastSolvedDate !== today) {
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-            if (lastSolvedDate === yesterdayStr) {
-              newCurrentStreak = (existingStreak.current_streak || 0) + 1;
-            } else {
-              newCurrentStreak = 1;
-            }
-
-            newLongestStreak = Math.max(newCurrentStreak, existingStreak.longest_streak || 0);
-
-            await supabase
-              .from('user_streaks')
-              .upsert({
-                user_id: user_id,
-                current_streak: newCurrentStreak,
-                longest_streak: newLongestStreak,
-                last_solved_at: today
-              }, { onConflict: 'user_id' });
-          }
-        } else {
-          await supabase
-            .from('user_streaks')
-            .insert({
-              user_id: user_id,
-              current_streak: 1,
-              longest_streak: 1,
-              last_solved_at: today
-            });
-        }
-      } catch (streakError) {
-        console.error("Error updating user_streaks:", streakError);
-        // Don't fail the submission if streak tracking fails
-      }
     }
 
     // If test results provided, save them
@@ -1244,33 +1058,38 @@ ${resume}
     try {
       // Helper function to find problems
       const findRelatedProblems = async (skill) => {
-        const { createClient } = await import('@supabase/supabase-js');
-        const supabaseUrl = process.env.SUPABASE_URL;
-        const supabaseKey = process.env.SUPABASE_ANON_KEY;
-
-        if (!supabaseUrl || !supabaseKey) return [];
-
-        const supabase = createClient(supabaseUrl, supabaseKey);
-        const { data } = await supabase
+        // Try to match by topic/skill name
+        // We use ILIKE for case-insensitive partial matching
+        const { data, error } = await supabase
           .from('problems')
-          .select('id, title, slug, difficulty')
-          .ilike('tags', `%${skill}%`)
+          .select('id, title, slug, difficulty, acceptance_rate')
+          .ilike('topics', `%${skill}%`) // Assuming topics is a string or array stored as string
           .limit(3);
 
-        return data || [];
+        if (error || !data) return [];
+
+        return data.map(p => ({
+          name: p.title,
+          url: `/coding/problem/${p.slug}`, // Internal URL
+          platform: 'Internal', // Mark as internal
+          difficulty: p.difficulty
+        }));
       };
 
       // Enrich gaps with internal problems
       if (analysisResult.skillBreakdown && analysisResult.skillBreakdown.gaps) {
-        for (const gap of analysisResult.skillBreakdown.gaps) {
-          const relatedProblems = await findRelatedProblems(gap.skill);
-          if (relatedProblems.length > 0) {
-            gap.recommendedProblems = relatedProblems.map(p => ({
-              id: p.id,
-              title: p.title,
-              difficulty: p.difficulty,
-              url: `/coding/problem/${p.slug || p.id}`
-            }));
+        for (let gap of analysisResult.skillBreakdown.gaps) {
+          // Only search for technical categories or if skill is clearly technical
+          const internalProblems = await findRelatedProblems(gap.skill);
+
+          if (internalProblems.length > 0) {
+            gap.recommendedProblems = internalProblems;
+          } else {
+            // Fallback: Try searching by category if skill didn't match
+            const categoryProblems = await findRelatedProblems(gap.category);
+            if (categoryProblems.length > 0) {
+              gap.recommendedProblems = categoryProblems;
+            }
           }
         }
       }
@@ -1295,35 +1114,4 @@ ${resume}
   }
 });
 
-// General text generation endpoint for resume builder
-router.post('/generate', async (req, res) => {
-  const { prompt } = req.body || {};
-
-  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-  if (!GEMINI_API_KEY) {
-    return res.status(500).json({ error: "Missing GEMINI_API_KEY" });
-  }
-
-  if (!prompt) {
-    return res.status(400).json({ error: "Missing prompt" });
-  }
-
-  try {
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.7 }
-    });
-
-    const responseText = result?.response?.text() || "No response";
-
-    return res.json({ text: responseText });
-
-  } catch (err) {
-    console.error("Gemini generate error:", err);
-    return res.status(500).json({ error: String(err) });
-  }
-});
 export default router;
