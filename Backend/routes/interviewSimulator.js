@@ -271,37 +271,12 @@ Rules:
 });
 
 // Extract text from an uploaded PDF (used for JD and Resume)
-router.post('/extract-pdf-text', upload.single('file'), async (req, res) => {
-  if (!req.file || !req.file.buffer) {
-    return res.status(400).json({ error: 'No PDF file uploaded' });
-  }
-
-  try {
-    console.log('PDF file buffer length:', req.file.buffer.length);
-
-    // Create PDFParse instance with the buffer data
-    const parser = new PDFParse({ data: req.file.buffer });
-
-    // Extract text from the PDF
-    const result = await parser.getText();
-    console.log('PDF data extracted:', result ? 'success' : 'failed');
-
-    const rawText = result.text || '';
-    console.log('Raw text length:', rawText.length);
-
-    // Normalize whitespace a bit for better LLM consumption
-    const text = rawText.replace(/\s+/g, ' ').trim();
-
-    if (!text) {
-      return res.status(400).json({ error: 'Unable to extract text from PDF' });
-    }
-
-    return res.json({ text });
-  } catch (err) {
-    console.error('PDF text extraction error:', err);
-    console.error('Error stack:', err.stack);
-    return res.status(500).json({ error: 'Failed to extract text from PDF', details: err.message });
-  }
+// PDF extraction endpoint - Removed for serverless compatibility
+// PDF processing should be done on the frontend using browser-based PDF.js
+router.post('/extract-pdf-text', async (req, res) => {
+  return res.status(501).json({
+    error: 'PDF extraction not available on serverless backend. Please use client-side PDF processing.'
+  });
 });
 
 router.post('/report', async (req, res) => {
