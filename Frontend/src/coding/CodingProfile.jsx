@@ -33,7 +33,7 @@ function CodingProfile() {
     window.scrollTo(0, 0);
 
     const apiBase = typeof import.meta !== 'undefined' && import.meta.env
-      ? (import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000')
+      ? (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000')
       : 'http://localhost:5000';
 
     // Fetch all user data
