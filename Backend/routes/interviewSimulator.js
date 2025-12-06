@@ -2,10 +2,7 @@ import express from 'express';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import axios from 'axios';
 import multer from 'multer';
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const pdfParseModule = require('pdf-parse');
-const pdfParse = pdfParseModule.default || pdfParseModule;
+import { PDFParse } from 'pdf-parse';
 
 const router = express.Router();
 const upload = multer();
@@ -283,10 +280,18 @@ router.post('/extract-pdf-text', upload.single('file'), async (req, res) => {
   }
 
   try {
-    console.log('PDF Parse function type:', typeof pdfParse);
-    console.log('PDF Parse:', pdfParse);
-    const data = await pdfParse(req.file.buffer);
-    const rawText = data.text || '';
+    console.log('PDF file buffer length:', req.file.buffer.length);
+
+    // Create PDFParse instance with the buffer data
+    const parser = new PDFParse({ data: req.file.buffer });
+
+    // Extract text from the PDF
+    const result = await parser.getText();
+    console.log('PDF data extracted:', result ? 'success' : 'failed');
+
+    const rawText = result.text || '';
+    console.log('Raw text length:', rawText.length);
+
     // Normalize whitespace a bit for better LLM consumption
     const text = rawText.replace(/\s+/g, ' ').trim();
 
@@ -297,7 +302,8 @@ router.post('/extract-pdf-text', upload.single('file'), async (req, res) => {
     return res.json({ text });
   } catch (err) {
     console.error('PDF text extraction error:', err);
-    return res.status(500).json({ error: 'Failed to extract text from PDF' });
+    console.error('Error stack:', err.stack);
+    return res.status(500).json({ error: 'Failed to extract text from PDF', details: err.message });
   }
 });
 

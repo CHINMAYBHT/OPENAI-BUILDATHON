@@ -148,24 +148,7 @@ function SubmissionDetails() {
     );
   }
 
-  const handleLogout = async () => {
-    try {
-      // Sign out from Supabase (handles OAuth and regular auth)
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Error signing out:', error);
-      }
 
-      // Clear local storage
-      localStorage.removeItem('user');
-      setIsLoggedIn(false);
-    } catch (error) {
-      console.error('Logout error:', error);
-      // Even if Supabase logout fails, clear local data
-      localStorage.removeItem('user');
-      setIsLoggedIn(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
@@ -223,15 +206,6 @@ function SubmissionDetails() {
               >
                 <FontAwesomeIcon icon={faUser} className="text-blue-600" />
               </Link>
-
-              {isLoggedIn && (
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-300"
-                >
-                  Logout
-                </button>
-              )}
             </div>
           </div>
         </div>
@@ -239,146 +213,263 @@ function SubmissionDetails() {
 
       {/* Main Content */}
       <main className="pt-24 pb-16 px-6 sm:px-8 lg:px-12">
-        <div className="max-w-6xl mx-auto">
+        <div className="w-full">
           {/* Header */}
-          <div className="mb-6">
-            <Link to="/coding/submissions" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4">
-              <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
-              Back to submissions
-            </Link>
-
-            <div className="flex justify-between items-start">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                  {submission.problems?.title || `Problem ${submission.problem_id}`}
-                </h1>
-                <p className="text-gray-600 mb-4">
-                  {submission.problems?.description ? submission.problems.description.substring(0, 100) + '...' : ''}
-                </p>
-              </div>
-
-              <div className={`inline-flex items-center space-x-2 px-4 py-2 rounded-lg font-medium ${getStatusColor(submission.final_status)}`}>
-                <FontAwesomeIcon
-                  icon={submission.final_status === 'passed' ? faCheck : (submission.final_status === 'failed' ? faTimes : faPlay)}
-                  className="text-sm"
-                />
-                <span className="capitalize">{submission.final_status}</span>
-              </div>
-            </div>
-
-            {/* Submission metadata */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
-              <div>
-                <div className="text-sm text-gray-600">Language</div>
-                <div className="font-medium">{submission.languages?.name || submission.language}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600">Submitted</div>
-                <div className="font-medium" title={formatDate(submission.created_at)}>
-                  <FontAwesomeIcon icon={faCalendar} className="mr-1" />
-                  {formatDate(submission.created_at)}
-                </div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600">Time Taken</div>
-                <div className="font-medium">
-                  <FontAwesomeIcon icon={faClock} className="mr-1" />
-                  {formatDuration(submission.total_time_ms)}
-                </div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600">Tests Passed</div>
-                <div className="font-medium">
-                  {submission.passed_count || 0} / {submission.total_tests || 0}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Code Section */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Submitted Code</h2>
-            <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-              <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">
-                  {submission.languages?.name || submission.language}
-                </span>
+            <div className="p-6 sm:p-8 mb-6">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
+                <div className="flex-1">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
+                    {submission.problems?.title || `Problem ${submission.problem_id}`}
+                  </h1>
+                  <p className="text-gray-600">
+                    {submission.problems?.description ? submission.problems.description.substring(0, 150) + '...' : ''}
+                  </p>
+                </div>
+
+                <div className={`inline-flex items-center space-x-2 px-5 py-2.5 rounded-full font-semibold text-sm ${getStatusColor(submission.final_status)}`}>
+                  <FontAwesomeIcon
+                    icon={submission.final_status === 'passed' ? faCheck : (submission.final_status === 'failed' ? faTimes : faPlay)}
+                  />
+                  <span className="capitalize">{submission.final_status}</span>
+                </div>
               </div>
-              <Editor
-                height="500px"
-                language={submission.language || 'javascript'}
-                value={submission.code || ''}
-                theme="vs-light"
-                options={{
-                  readOnly: true,
-                  minimap: { enabled: false },
-                  scrollBeyondLastLine: false,
-                  wordWrap: 'on',
-                  automaticLayout: true,
-                  tabSize: 2,
-                  insertSpaces: true,
-                  folding: true,
-                  lineNumbers: 'on',
-                  renderLineHighlight: 'all'
-                }}
-              />
+
+              {/* Submission metadata */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-6 border-t border-gray-100">
+                <div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Language</div>
+                  <div className="font-semibold text-gray-900">{submission.languages?.name || submission.language}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Submitted</div>
+                  <div className="font-semibold text-gray-900" title={formatDate(submission.created_at)}>
+                    {new Date(submission.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Time Taken</div>
+                  <div className="font-semibold text-gray-900">
+                    {formatDuration(submission.total_time_ms)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Tests Passed</div>
+                  <div className="font-semibold text-gray-900">
+                    {submission.passed_count || 0} / {submission.total_tests || 0}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Test Results */}
-          {submission.submission_results && submission.submission_results.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Test Results</h2>
-              <div className="space-y-4">
-                {submission.submission_results.map((result, index) => (
-                  <div key={result.id || index} className="border border-gray-200 rounded-lg p-5 bg-white">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-semibold text-lg">Test Case {index + 1}</h3>
-                      <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium ${result.passed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                        <FontAwesomeIcon
-                          icon={result.passed ? faCheck : faTimes}
-                          className="text-xs"
-                        />
-                        <span>{result.passed ? 'Passed' : 'Failed'}</span>
-                      </div>
-                    </div>
+          {/* Two Column Layout - Code and Test Results */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Input</h4>
-                        <pre className="bg-gray-50 p-4 rounded-lg text-sm overflow-x-auto border border-gray-200">
-                          {result.input || 'N/A'}
-                        </pre>
-                      </div>
-
-                      <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Expected Output</h4>
-                        <pre className="bg-gray-50 p-4 rounded-lg text-sm overflow-x-auto border border-gray-200">
-                          {result.expected_output || 'N/A'}
-                        </pre>
-                      </div>
-                    </div>
-
-                    <div className="mt-6">
-                      <h4 className="font-medium text-gray-900 mb-2">Your Output</h4>
-                      <pre className={`p-4 rounded-lg text-sm overflow-x-auto border ${result.passed ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                        {result.actual_output || 'N/A'}
-                      </pre>
-                    </div>
-
-                    <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
-                      <div className="flex items-center space-x-4">
-                        <span>Runtime: {result.time_ms}ms</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+            {/* Left Column - Code Section */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                Submitted Code
+              </h2>
+              <div className="bg-white rounded-xl overflow-hidden border border-gray-200">
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-3 border-b border-gray-200">
+                  <span className="text-sm font-semibold text-gray-700">
+                    {submission.languages?.name || submission.language}
+                  </span>
+                </div>
+                <Editor
+                  height="600px"
+                  language={submission.language || 'javascript'}
+                  value={submission.code || ''}
+                  theme="vs-dark"
+                  options={{
+                    readOnly: true,
+                    minimap: { enabled: false },
+                    scrollBeyondLastLine: false,
+                    wordWrap: 'on',
+                    automaticLayout: true,
+                    tabSize: 2,
+                    insertSpaces: true,
+                    folding: true,
+                    lineNumbers: 'on',
+                    renderLineHighlight: 'all'
+                  }}
+                />
               </div>
+            </div>
+
+            {/* Right Column - Test Results */}
+            {submission.submission_results && submission.submission_results.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                  Test Results
+                </h2>
+                <div className="space-y-4">
+                  {submission.submission_results.map((result, index) => (
+                    <div key={result.id || index} className="bg-white rounded-xl p-6 border border-gray-200">
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="font-bold text-lg text-gray-900">Test Case {index + 1}</h3>
+                        <div className="flex items-center space-x-3">
+                          <span className={`px-4 py-1.5 rounded-full text-sm font-semibold ${result.passed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                            {result.passed ? '✓ Passed' : '✗ Failed'}
+                          </span>
+                          <span className="text-sm text-gray-500 font-medium">{result.time_ms}ms</span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <div className="text-xs font-semibold text-gray-700 mb-2">Input</div>
+                          <pre className="bg-gray-50 text-gray-800 p-3 rounded-lg text-xs overflow-x-auto border border-gray-200">{result.input || 'N/A'}</pre>
+                        </div>
+                        <div>
+                          <div className="text-xs font-semibold text-gray-700 mb-2">Expected Output</div>
+                          <pre className="bg-gray-50 text-gray-800 p-3 rounded-lg text-xs overflow-x-auto border border-gray-200">{result.expected_output || 'N/A'}</pre>
+                        </div>
+                        <div>
+                          <div className="text-xs font-semibold text-gray-700 mb-2">Your Output</div>
+                          <pre className={`p-3 rounded-lg text-xs overflow-x-auto border ${result.passed ? 'bg-green-50 text-green-800 border-green-200' : 'bg-red-50 text-red-800 border-red-200'}`}>
+                            {result.actual_output || 'No output produced'}
+                          </pre>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* AI Code Review */}
+          {submission.ai_code_reviews && submission.ai_code_reviews.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                AI Code Review & Feedback
+              </h2>
+              {submission.ai_code_reviews.map((review, index) => (
+                <div key={review.id || index} className="bg-white rounded-xl p-6 sm:p-8 border border-gray-200">
+                  {/* Scores Grid - Use scores from submission table */}
+                  {(submission.readability_score || submission.maintainability_score) && (
+                    <div className="mb-8">
+                      <h3 className="text-lg font-bold text-gray-800 mb-6 text-center">Code Quality Scores</h3>
+                      <div className="flex flex-wrap justify-center gap-8 sm:gap-12">
+                        {submission.readability_score && (
+                          <div className="flex flex-col items-center">
+                            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-blue-50 border-4 border-blue-500 flex flex-col items-center justify-center mb-3 hover:scale-105 transition-transform">
+                              <div className="text-4xl sm:text-5xl font-bold text-blue-600">{submission.readability_score}</div>
+                              <div className="text-xs text-gray-500 font-medium">out of 10</div>
+                            </div>
+                            <div className="text-sm font-bold text-gray-700 uppercase tracking-wide mb-2">Readability</div>
+                            {review.readability_justification && (
+                              <p className="text-xs text-gray-600 text-center max-w-xs leading-relaxed">{review.readability_justification}</p>
+                            )}
+                          </div>
+                        )}
+                        {submission.maintainability_score && (
+                          <div className="flex flex-col items-center">
+                            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-green-50 border-4 border-green-500 flex flex-col items-center justify-center mb-3 hover:scale-105 transition-transform">
+                              <div className="text-4xl sm:text-5xl font-bold text-green-600">{submission.maintainability_score}</div>
+                              <div className="text-xs text-gray-500 font-medium">out of 10</div>
+                            </div>
+                            <div className="text-sm font-bold text-gray-700 uppercase tracking-wide mb-2">Maintainability</div>
+                            {review.maintainability_justification && (
+                              <p className="text-xs text-gray-600 text-center max-w-xs leading-relaxed">{review.maintainability_justification}</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Suggestions */}
+                  {review.suggestions && (
+                    <div className="mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 sm:p-6 border border-indigo-200">
+                      <h4 className="font-bold text-indigo-900 mb-4 text-lg flex items-center gap-2">
+                        <FontAwesomeIcon icon={faCode} className="text-indigo-600" />
+                        AI Suggestions
+                      </h4>
+                      <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{review.suggestions}</p>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    {/* Strengths */}
+                    {review.strengths && review.strengths.length > 0 && (
+                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 sm:p-6 border border-green-200">
+                        <h4 className="font-bold text-green-900 mb-4 text-lg flex items-center gap-2">
+                          <FontAwesomeIcon icon={faCheck} className="text-green-600" />
+                          Strengths
+                        </h4>
+                        <ul className="space-y-3">
+                          {review.strengths.map((strength, idx) => (
+                            <li key={idx} className="text-sm text-gray-700 flex items-start gap-3">
+                              <span className="text-green-500 text-lg mt-0.5 flex-shrink-0">✓</span>
+                              <span className="flex-1">{strength}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Weaknesses / Critical Issues */}
+                    {(review.weaknesses || review.critical_issues) && (
+                      <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-4 sm:p-6 border border-orange-200">
+                        <h4 className="font-bold text-orange-900 mb-4 text-lg flex items-center gap-2">
+                          <FontAwesomeIcon icon={faTimes} className="text-orange-600" />
+                          Areas for Improvement
+                        </h4>
+                        <ul className="space-y-3">
+                          {review.weaknesses && review.weaknesses.length > 0 && review.weaknesses.map((weakness, idx) => (
+                            <li key={`weakness-${idx}`} className="text-sm text-gray-700 flex items-start gap-3">
+                              <span className="text-orange-500 text-lg mt-0.5 flex-shrink-0">→</span>
+                              <span className="flex-1">{weakness}</span>
+                            </li>
+                          ))}
+                          {review.critical_issues && review.critical_issues.length > 0 && review.critical_issues.map((issue, idx) => (
+                            <li key={`issue-${idx}`} className="text-sm text-red-700 flex items-start gap-3">
+                              <span className="text-red-500 text-lg mt-0.5 flex-shrink-0">⚠</span>
+                              <span className="flex-1 font-medium">{issue}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Interview Perspective */}
+                  {review.interview_perspective && review.interview_perspective.length > 0 && (
+                    <div className="mt-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 sm:p-6 border border-purple-200">
+                      <h4 className="font-semibold text-purple-900 mb-4 text-lg flex items-center gap-2">
+                        <FontAwesomeIcon icon={faUser} className="text-purple-600" />
+                        Interview Perspective
+                      </h4>
+                      <ul className="space-y-2">
+                        {review.interview_perspective.map((point, idx) => (
+                          <li key={idx} className="text-sm text-gray-700 flex items-start gap-3">
+                            <span className="text-purple-500 text-lg mt-0.5 flex-shrink-0">•</span>
+                            <span className="flex-1">{point}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Review Date */}
+                  {review.created_at && (
+                    <div className="mt-6 text-center">
+                      <p className="text-xs text-gray-500">
+                        <FontAwesomeIcon icon={faCalendar} className="mr-1" />
+                        Review generated on {formatDate(review.created_at)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           )}
 
-          {/* Performance Metrics */}
-          {(submission.readability_score || submission.maintainability_score) && (
+          {/* Performance Metrics (Fallback if no AI review) */}
+          {(!submission.ai_code_reviews || submission.ai_code_reviews.length === 0) && (submission.readability_score || submission.maintainability_score) && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Performance Metrics</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -403,13 +494,6 @@ function SubmissionDetails() {
 
           {/* Action Buttons */}
           <div className="flex justify-between items-center pt-6 border-t border-gray-200">
-            <Link
-              to={`/coding/problem/${submission.problem_id}`}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              View Problem Again
-            </Link>
-
             <span className="text-sm text-gray-500">
               Submission ID: {submission.id}
             </span>

@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faCode, 
-  faBuilding, 
-  faUser, 
-  faListCheck, 
-  faBullseye, 
+import {
+  faCode,
+  faBuilding,
+  faUser,
+  faListCheck,
+  faBullseye,
   faClock,
   faHome
 } from '@fortawesome/free-solid-svg-icons';
@@ -37,48 +37,25 @@ function CodingLanding() {
       description: 'Track your progress with detailed stats: problems solved, attempts, streaks, and topic mastery.',
       color: 'green',
       link: '/coding/profile'
-    },
-    // {
-    //   icon: faListCheck,
-    //   title: 'Coding Sheets',
-    //   description: 'Popular curated sheets like Arrays 50, Linked List 50, DP 50, and more structured learning paths.',
-    //   color: 'orange',
-    //   link: '/coding/sheets',
-    //   buttonText: 'Explore Sheets'
-    // },
-    // {
-    //   icon: faBullseye,
-    //   title: 'Role-based Recommendations',
-    //   description: 'Choose your job role and target company to get a personalized problem set tailored for you.',
-    //   color: 'pink',
-    //   link: '/coding/recommendations'
-    // },
-    {
-      icon: faClock,
-      title: 'Mock Coding Tests',
-      description: 'Take timed coding tests (60 mins, 2–3 questions) and get instant result summary and feedback.',
-      color: 'red',
-      link: '/coding/mock-tests',
-      buttonText: 'Take Mock Test'
     }
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 relative">
-      
+
       {/* Home Icon - Top Right */}
-      <Link 
-        to="/" 
+      <Link
+        to="/"
         className="fixed top-6 right-6 z-50 p-3 rounded-lg bg-white  hover:bg-gray-50 transition-all duration-300 text-blue-500 hover:text-blue-600"
         title="Go to Home"
       >
         <FontAwesomeIcon icon={faHome} className="text-xl" />
       </Link>
-      
+
       {/* Main Content */}
       <main className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          
+
           {/* Hero Section */}
           <div className="text-center mb-16">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-800">
@@ -92,13 +69,13 @@ function CodingLanding() {
           {/* Feature Cards Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <div 
+              <div
                 key={index}
                 className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:-translate-y-2"
               >
                 <div className="w-16 h-16 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <FontAwesomeIcon 
-                    icon={feature.icon} 
+                  <FontAwesomeIcon
+                    icon={feature.icon}
                     className="text-4xl text-blue-500"
                   />
                 </div>
@@ -106,17 +83,17 @@ function CodingLanding() {
                 <p className="text-xs text-gray-500 leading-relaxed mb-6">
                   {feature.description}
                 </p>
-                <Link 
+                <Link
                   to={feature.link}
                   className="w-[70%] bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-3xl font-semibold text-sm transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg"
                 >
-                  <span>{feature.buttonText || (feature.title.includes('Profile') ? 'View Profile' : 
-                   feature.title.includes('Problems') ? 'Browse Problems' :
-                   feature.title.includes('Company') ? 'View Companies' :
-                   feature.title.includes('Sheets') ? 'Explore Sheets' :
-                   feature.title.includes('Recommendations') ? 'Get Recommendations' :
-                   feature.title.includes('Mock') ? 'Take Mock Test' :
-                   'Start Mock Test')}</span>
+                  <span>{feature.buttonText || (feature.title.includes('Profile') ? 'View Profile' :
+                    feature.title.includes('Problems') ? 'Browse Problems' :
+                      feature.title.includes('Company') ? 'View Companies' :
+                        feature.title.includes('Sheets') ? 'Explore Sheets' :
+                          feature.title.includes('Recommendations') ? 'Get Recommendations' :
+                            feature.title.includes('Mock') ? 'Take Mock Test' :
+                              'Start Mock Test')}</span>
                 </Link>
               </div>
             ))}
