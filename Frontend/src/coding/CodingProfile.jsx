@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faUser, 
-  faHome, 
+import { supabase } from '../utils/supabase';
+import {
+  faUser,
+  faHome,
   faCode,
   faBuilding,
   faChevronLeft,
@@ -17,77 +18,131 @@ function CodingProfile() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState(null);
   const [starredProblems, setStarredProblems] = useState(new Set([2, 4]));
+  const [userLanguages, setUserLanguages] = useState([]);
+  const [userStats, setUserStats] = useState(null);
+  const [userStreaks, setUserStreaks] = useState(null);
+  const [companyProgress, setCompanyProgress] = useState([]);
+  const [username, setUsername] = useState('User');
+  const [solvedProblems, setSolvedProblems] = useState([]);
+  const [attemptedProblems, setAttemptedProblems] = useState([]);
+  const [likedProblems, setLikedProblems] = useState([]);
+  const [starredProblemsList, setStarredProblemsList] = useState([]);
+  const [calendarData, setCalendarData] = useState({});
+  const [topics, setTopics] = useState([]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
-  
-  // Mock user data
-  const userData = {
-    username: "john_doe",
-    totalSolved: 578,
-    easy: 141,
-    medium: 338,
-    hard: 99,
-    languages: [
-      { name: "C++", solved: 245 },
-      { name: "Java", solved: 189 },
-      { name: "JavaScript", solved: 98 },
-      { name: "Python", solved: 156 }
-    ],
-    topics: [
-      { name: "Arrays", solved: 89 },
-      { name: "Strings", solved: 67 },
-      { name: "Trees", solved: 45 },
-      { name: "Dynamic Programming", solved: 34 },
-      { name: "Graphs", solved: 28 },
-      { name: "Linked Lists", solved: 42 }
-    ],
-    companies: [
-      { name: "Google", solved: 67 },
-      { name: "Amazon", solved: 89 },
-      { name: "Microsoft", solved: 45 },
-      { name: "Apple", solved: 34 },
-      { name: "Facebook", solved: 56 },
-      { name: "Netflix", solved: 23 }
-    ],
-    streak: {
-      current: 15,
-      best: 42
-    }
-  };
 
-  // Mock data for different problem lists
+    const apiBase = typeof import.meta !== 'undefined' && import.meta.env
+      ? (import.meta.env.VITE_API_BASE || import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000')
+      : 'http://localhost:5000';
+
+    // Fetch all user data
+    const fetchUserData = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) return;
+
+        const userId = session.user.id;
+
+        // Extract username from auth.users
+        const userEmail = session.user.email;
+        const userName = session.user.user_metadata?.name ||
+          session.user.user_metadata?.full_name ||
+          session.user.user_metadata?.username ||
+          userEmail?.split('@')[0] ||
+          'User';
+        setUsername(userName);
+
+        // Fetch user languages
+        const langResponse = await fetch(`${apiBase}/api/user-languages/${userId}`);
+        const langData = await langResponse.json();
+        if (langData.success && langData.languages) {
+          setUserLanguages(langData.languages);
+        }
+
+        // Fetch user stats (total solved, by difficulty, topics)
+        const statsResponse = await fetch(`${apiBase}/api/user-stats/${userId}`);
+        const statsData = await statsResponse.json();
+        if (statsData.success && statsData.stats) {
+          setUserStats(statsData.stats);
+          if (statsData.stats.topics) {
+            setTopics(statsData.stats.topics);
+          }
+        }
+
+        // Fetch user streaks
+        const streaksResponse = await fetch(`${apiBase}/api/user-streaks/${userId}`);
+        const streaksData = await streaksResponse.json();
+        if (streaksData.success && streaksData.streak) {
+          setUserStreaks(streaksData.streak);
+        }
+
+        // Fetch calendar data
+        const calendarResponse = await fetch(`${apiBase}/api/user-streaks/${userId}/calendar`);
+        const calData = await calendarResponse.json();
+        if (calData.success && calData.calendar) {
+          setCalendarData(calData.calendar);
+        }
+
+        // Fetch company progress
+        const { data: companyProgressData } = await supabase
+          .from('user_company_progress')
+          .select('*, companies(name)')
+          .eq('user_id', userId)
+          .order('solved_total', { ascending: false })
+          .limit(6);
+
+        if (companyProgressData) {
+          setCompanyProgress(companyProgressData);
+        }
+
+        // Fetch solved problems
+        const solvedResponse = await fetch(`${apiBase}/api/user-stats/${userId}/solved`);
+        const solvedData = await solvedResponse.json();
+        if (solvedData.success && solvedData.problems) {
+          setSolvedProblems(solvedData.problems);
+        }
+
+        // Fetch attempted problems
+        const attemptedResponse = await fetch(`${apiBase}/api/user-stats/${userId}/attempted`);
+        const attemptedData = await attemptedResponse.json();
+        if (attemptedData.success && attemptedData.problems) {
+          setAttemptedProblems(attemptedData.problems);
+        }
+
+        // Fetch liked problems
+        const likedResponse = await fetch(`${apiBase}/api/user-stats/${userId}/liked`);
+        const likedData = await likedResponse.json();
+        if (likedData.success && likedData.problems) {
+          setLikedProblems(likedData.problems);
+        }
+
+        // Fetch starred problems
+        const starredResponse = await fetch(`${apiBase}/api/user-stats/${userId}/starred`);
+        const starredData = await starredResponse.json();
+        if (starredData.success && starredData.problems) {
+          setStarredProblemsList(starredData.problems);
+          setStarredProblems(new Set(starredData.problems.map(p => p.id)));
+        }
+
+      } catch (err) {
+        console.error('Error fetching user data:', err);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  // Mock data for sheets (keeping this as it's a separate feature)
   const savedSheets = [
     { id: 1, title: "Arrays 50", problems: 50, completed: 35 },
     { id: 2, title: "Strings 30", problems: 30, completed: 22 },
     { id: 3, title: "Trees 40", problems: 40, completed: 28 }
   ];
 
-  const solvedProblems = [
-    { id: 1, title: "Two Sum", difficulty: "Easy", acceptanceRate: 47.2, status: "solved" },
-    { id: 3, title: "Longest Substring Without Repeating Characters", difficulty: "Medium", acceptanceRate: 32.4, status: "solved" },
-    { id: 5, title: "Longest Palindromic Substring", difficulty: "Medium", acceptanceRate: 31.6, status: "solved" }
-  ];
-
-  const attemptedProblems = [
-    { id: 2, title: "Add Two Numbers", difficulty: "Medium", acceptanceRate: 35.8, status: "attempted" },
-    { id: 4, title: "Median of Two Sorted Arrays", difficulty: "Hard", acceptanceRate: 29.1, status: "attempted" },
-    { id: 6, title: "ZigZag Conversion", difficulty: "Medium", acceptanceRate: 39.7, status: "attempted" }
-  ];
-
-  const likedProblems = [
-    { id: 1, title: "Two Sum", difficulty: "Easy", acceptanceRate: 47.2, status: "solved" },
-    { id: 3, title: "Longest Substring Without Repeating Characters", difficulty: "Medium", acceptanceRate: 32.4, status: "solved" }
-  ];
-
-  const starredProblemsList = [
-    { id: 2, title: "Add Two Numbers", difficulty: "Medium", acceptanceRate: 35.8, status: "attempted" },
-    { id: 4, title: "Median of Two Sorted Arrays", difficulty: "Hard", acceptanceRate: 29.1, status: "attempted" }
-  ];
-
   const getDifficultyColor = (difficulty) => {
-    switch(difficulty) {
+    switch (difficulty) {
       case 'Easy':
         return 'text-green-600';
       case 'Medium':
@@ -113,50 +168,30 @@ function CodingProfile() {
   const today = new Date();
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  
+
   const firstDayOfMonth = new Date(year, month, 1);
   const lastDayOfMonth = new Date(year, month + 1, 0);
   const firstDayWeekday = firstDayOfMonth.getDay();
   const daysInMonth = lastDayOfMonth.getDate();
-  
+
   const monthNames = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
-  
+
   const daysOfWeek = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-  
+
   const navigateMonth = (direction) => {
     setCurrentDate(new Date(year, month + direction, 1));
   };
-  
-  // Mock streak data - days when user solved problems
-  // Current streak: last 15 days (orange)
-  const currentStreakDays = new Set([
-    today.getDate(),
-    today.getDate() - 1,
-    today.getDate() - 2,
-    today.getDate() - 3,
-    today.getDate() - 4,
-    today.getDate() - 5,
-    today.getDate() - 6,
-    today.getDate() - 7,
-    today.getDate() - 8,
-    today.getDate() - 9,
-    today.getDate() - 10,
-    today.getDate() - 11,
-    today.getDate() - 12,
-    today.getDate() - 13,
-    today.getDate() - 14,
-  ]);
-  
+
   const renderCalendarDays = () => {
     const days = [];
-    
+
     // Previous month's trailing days
     const prevMonth = new Date(year, month - 1, 0);
     const prevMonthDays = prevMonth.getDate();
-    
+
     for (let i = firstDayWeekday - 1; i >= 0; i--) {
       days.push(
         <div key={`prev-${prevMonthDays - i}`} className="w-8 h-8 flex items-center justify-center text-gray-300 text-sm">
@@ -164,36 +199,38 @@ function CodingProfile() {
         </div>
       );
     }
-    
+
     // Current month days
     for (let day = 1; day <= daysInMonth; day++) {
       const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-      const isCurrentStreak = currentStreakDays.has(day) && month === today.getMonth() && year === today.getFullYear();
-      
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const hasSolved = calendarData[dateStr] > 0;
+
       let bgClass = 'text-gray-700';
       let content = day;
-      
+
       if (isToday) {
         bgClass = 'bg-blue-500 text-white font-bold';
-      } else if (isCurrentStreak) {
-        bgClass = 'bg-orange-500 text-white font-semibold';
-        content = <FontAwesomeIcon icon={faFire} />;
+      } else if (hasSolved) {
+        bgClass = 'bg-green-500 text-white font-semibold';
+        content = <FontAwesomeIcon icon={faCheck} />;
       }
-      
+
       days.push(
-        <div 
-          key={day} 
+        <div
+          key={day}
           className={`w-8 h-8 flex items-center justify-center text-sm cursor-pointer rounded ${bgClass}`}
+          title={hasSolved ? `${calendarData[dateStr]} problem(s) solved` : ''}
         >
           {content}
         </div>
       );
     }
-    
+
     // Next month's leading days
     const totalCells = Math.ceil((firstDayWeekday + daysInMonth) / 7) * 7;
     const remainingCells = totalCells - (firstDayWeekday + daysInMonth);
-    
+
     for (let day = 1; day <= remainingCells; day++) {
       days.push(
         <div key={`next-${day}`} className="w-8 h-8 flex items-center justify-center text-gray-300 text-sm">
@@ -201,7 +238,7 @@ function CodingProfile() {
         </div>
       );
     }
-    
+
     return days;
   };
 
@@ -214,27 +251,27 @@ function CodingProfile() {
             <div className="flex items-center">
               <span className="text-lg font-bold text-gray-800">Job Builder</span>
             </div>
-            
+
             {/* Right side navigation */}
             <div className="flex items-center space-x-6">
               {/* Home Button */}
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-gray-100"
               >
                 <FontAwesomeIcon icon={faHome} />
                 <span>Home</span>
               </Link>
-              
+
               {/* Companies Button */}
-              <Link 
-                to="/coding/companies" 
+              <Link
+                to="/coding/companies"
                 className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-gray-100"
               >
                 <FontAwesomeIcon icon={faBuilding} />
                 <span>Companies</span>
               </Link>
-              
+
               {/* Submissions Button */}
               <Link
                 to="/coding/submissions"
@@ -270,54 +307,51 @@ function CodingProfile() {
       <main className="pt-24 pb-16 px-6 sm:px-8 lg:px-12">
         <div className="w-full">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
+
             {/* Left Column - User Stats */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-xl shadow-lg border border-gray-100">
                 {/* User Info */}
                 <div className="p-6 flex flex-col items-start border-b border-gray-200">
                   <div className="w-40 h-40 bg-teal-500 rounded-lg flex items-center justify-center mb-4">
-                    <span className="text-9xl font-bold text-white">{userData.username.charAt(0).toUpperCase()}</span>
+                    <span className="text-9xl font-bold text-white">{username.charAt(0).toUpperCase()}</span>
                   </div>
-                  <h2 className="text-lg ml-2 font-bold text-gray-900">{userData.username}</h2>
+                  <h2 className="text-lg ml-2 font-bold text-gray-900">{username}</h2>
                 </div>
 
                 {/* Languages Stats */}
                 <div className="p-6 border-b border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Languages</h3>
                   <div className="space-y-3">
-                    {userData.languages.map((language, index) => (
-                      <div key={index} className="flex justify-between items-center">
-                        <span className="text-gray-700 font-medium">{language.name}</span>
-                        <span className="text-sm text-gray-500">{language.solved}</span>
-                      </div>
-                    ))}
+                    {userLanguages.length > 0 ? (
+                      userLanguages.map((language, index) => (
+                        <div key={index} className="flex justify-between items-center">
+                          <span className="text-gray-700 font-medium">{language.language}</span>
+                          <span className="text-sm text-gray-500">{language.solved_count} solved</span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-sm text-gray-500">No languages data yet</div>
+                    )}
                   </div>
                 </div>
 
                 {/* Topics Stats */}
-                <div className="p-6 border-b border-gray-200">
+                <div className="p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Topics</h3>
                   <div className="space-y-3">
-                    {userData.topics.map((topic, index) => (
-                      <div key={index} className="flex justify-between items-center">
-                        <span className="text-gray-700 font-medium">{topic.name}</span>
-                        <span className="text-sm text-gray-500">{topic.solved}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Companies Stats */}
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Companies</h3>
-                  <div className="space-y-3">
-                    {userData.companies.map((company, index) => (
-                      <div key={index} className="flex justify-between items-center">
-                        <span className="text-gray-700 font-medium">{company.name}</span>
-                        <span className="text-sm text-gray-500">{company.solved}</span>
-                      </div>
-                    ))}
+                    {topics && topics.length > 0 ? (
+                      topics.slice(0, 6).map((topic, index) => (
+                        <div key={index} className="flex justify-between items-center">
+                          <span className="text-gray-700 font-medium">{topic.topic}</span>
+                          <span className="text-sm text-gray-500">
+                            {topic.solved_count || topic.count || 0}/{topic.total_count || 0}
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-sm text-gray-500">No topics data yet</div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -325,28 +359,28 @@ function CodingProfile() {
 
             {/* Right Column - Problem Overview & Calendar */}
             <div className="lg:col-span-2 space-y-6">
-              
+
               {/* Problem Solving Overview */}
               <div className="bg-white rounded-xl p-8 border border-gray-200">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Problem Solving Overview</h2>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  
+
                   {/* Difficulty Stats */}
                   <div className="space-y-4">
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                       <div className="text-green-600 font-semibold text-sm">Easy</div>
-                      <div className="text-xl font-bold text-green-700">{userData.easy}/<span className="font-normal text-lg">141</span></div>
+                      <div className="text-xl font-bold text-green-700">{userStats?.easy || 0}/<span className="font-normal text-lg">{userStats?.totalEasy || 0}</span></div>
                     </div>
-                    
+
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                       <div className="text-yellow-600 font-semibold text-sm">Med.</div>
-                      <div className="text-xl font-bold text-yellow-700">{userData.medium}/<span className="font-normal text-lg">338</span></div>
+                      <div className="text-xl font-bold text-yellow-700">{userStats?.medium || 0}/<span className="font-normal text-lg">{userStats?.totalMedium || 0}</span></div>
                     </div>
-                    
+
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                       <div className="text-red-600 font-semibold text-sm">Hard</div>
-                      <div className="text-xl font-bold text-red-700">{userData.hard}/<span className="font-normal text-lg">99</span></div>
+                      <div className="text-xl font-bold text-red-700">{userStats?.hard || 0}/<span className="font-normal text-lg">{userStats?.totalHard || 0}</span></div>
                     </div>
                   </div>
 
@@ -369,13 +403,13 @@ function CodingProfile() {
                           fill="none"
                           stroke="#3b82f6"
                           strokeWidth="10"
-                          strokeDasharray={`${(userData.totalSolved / 1000) * 314} 314`}
+                          strokeDasharray={`${((userStats?.totalSolved || 0) / (userStats?.totalProblems || 1000)) * 314} 314`}
                           className="transition-all duration-300"
                         />
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-3xl font-bold text-gray-900">{userData.totalSolved}</span>
-                        <span className="text-base text-gray-600">/<span className="font-normal">{userData.totalSolved + 422}</span></span>
+                        <span className="text-3xl font-bold text-gray-900">{userStats?.totalSolved || 0}</span>
+                        <span className="text-base text-gray-600">/<span className="font-normal">{userStats?.totalProblems || 0}</span></span>
                         <span className="text-xs text-gray-500">Solved</span>
                       </div>
                     </div>
@@ -391,15 +425,15 @@ function CodingProfile() {
                       {currentDate.getFullYear()} {monthNames[month]}
                     </h3>
                   </div>
-                  
+
                   <div className="flex items-center space-x-2">
-                    <button 
+                    <button
                       onClick={() => navigateMonth(-1)}
                       className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                       <FontAwesomeIcon icon={faChevronLeft} className="text-gray-600" />
                     </button>
-                    <button 
+                    <button
                       onClick={() => navigateMonth(1)}
                       className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     >
@@ -418,7 +452,7 @@ function CodingProfile() {
                       </div>
                     ))}
                   </div>
-                  
+
                   {/* Calendar days */}
                   <div className="grid grid-cols-7 gap-1">
                     {renderCalendarDays()}
@@ -430,11 +464,11 @@ function CodingProfile() {
                   <div className="flex items-center space-x-6">
                     <div className="flex items-center space-x-2">
                       <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                      <span className="text-sm text-gray-600">Current {userData.streak.current}</span>
+                      <span className="text-sm text-gray-600">Current {userStreaks?.current_streak || 0}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      <span className="text-sm text-gray-600">Best {userData.streak.best}</span>
+                      <span className="text-sm text-gray-600">Best {userStreaks?.longest_streak || 0}</span>
                     </div>
                   </div>
                 </div>
@@ -442,7 +476,7 @@ function CodingProfile() {
 
               {/* Cards Section */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div 
+                <div
                   onClick={() => setActiveTab(activeTab === 'sheets' ? null : 'sheets')}
                   className={`p-4 rounded-xl cursor-pointer transition-all ${activeTab === 'sheets' ? 'bg-blue-100 border-2 border-blue-500' : 'bg-blue-200 border border-blue-300 hover:shadow-lg'}`}
                 >
@@ -452,7 +486,7 @@ function CodingProfile() {
                   </div>
                 </div>
 
-                <div 
+                <div
                   onClick={() => setActiveTab(activeTab === 'solved' ? null : 'solved')}
                   className={`p-4 rounded-xl cursor-pointer transition-all ${activeTab === 'solved' ? 'bg-green-100 border-2 border-green-500' : 'bg-green-200 border border-green-300 hover:shadow-lg'}`}
                 >
@@ -462,7 +496,7 @@ function CodingProfile() {
                   </div>
                 </div>
 
-                <div 
+                <div
                   onClick={() => setActiveTab(activeTab === 'attempted' ? null : 'attempted')}
                   className={`p-4 rounded-xl cursor-pointer transition-all ${activeTab === 'attempted' ? 'bg-yellow-100 border-2 border-yellow-500' : 'bg-yellow-200 border border-yellow-300 hover:shadow-lg'}`}
                 >
@@ -472,7 +506,7 @@ function CodingProfile() {
                   </div>
                 </div>
 
-                <div 
+                <div
                   onClick={() => setActiveTab(activeTab === 'liked' ? null : 'liked')}
                   className={`p-4 rounded-xl cursor-pointer transition-all ${activeTab === 'liked' ? 'bg-red-100 border-2 border-red-500' : 'bg-red-200 border border-red-300 hover:shadow-lg'}`}
                 >
@@ -482,7 +516,7 @@ function CodingProfile() {
                   </div>
                 </div>
 
-                <div 
+                <div
                   onClick={() => setActiveTab(activeTab === 'starred' ? null : 'starred')}
                   className={`p-4 rounded-xl cursor-pointer transition-all ${activeTab === 'starred' ? 'bg-purple-100 border-2 border-purple-500' : 'bg-purple-200 border border-purple-300 hover:shadow-lg'}`}
                 >
@@ -510,25 +544,25 @@ function CodingProfile() {
                           <h3 className="text-lg font-bold text-gray-900">{sheet.title}</h3>
                         </div>
                       </div>
-                      
+
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-gray-600">Total Problems</span>
                           <span className="text-sm font-semibold text-gray-900">{sheet.problems}</span>
                         </div>
-                        
+
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-gray-600">Completed</span>
                           <span className="text-sm font-semibold text-green-600">{sheet.completed}</span>
                         </div>
-                        
+
                         <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                          <div 
+                          <div
                             className="bg-blue-500 h-2 rounded-full transition-all"
                             style={{ width: `${(sheet.completed / sheet.problems) * 100}%` }}
                           ></div>
                         </div>
-                        
+
                         <div className="text-xs text-gray-500 text-right mt-2">
                           {Math.round((sheet.completed / sheet.problems) * 100)}% Complete
                         </div>
@@ -545,8 +579,8 @@ function CodingProfile() {
                     <table className="w-full">
                       <tbody className="bg-transparent">
                         {activeTab === 'solved' && solvedProblems.map((problem, index) => (
-                          <tr 
-                            key={problem.id} 
+                          <tr
+                            key={problem.id}
                             onClick={() => navigate(`/coding/problem/${problem.id}`)}
                             className="hover:bg-gray-50 transition-colors border-b border-gray-200 cursor-pointer"
                           >
@@ -585,8 +619,8 @@ function CodingProfile() {
                           </tr>
                         ))}
                         {activeTab === 'attempted' && attemptedProblems.map((problem, index) => (
-                          <tr 
-                            key={problem.id} 
+                          <tr
+                            key={problem.id}
                             onClick={() => navigate(`/coding/problems/${problem.id}`)}
                             className="hover:bg-gray-50 transition-colors border-b border-gray-200 cursor-pointer"
                           >
@@ -625,8 +659,8 @@ function CodingProfile() {
                           </tr>
                         ))}
                         {activeTab === 'liked' && likedProblems.map((problem, index) => (
-                          <tr 
-                            key={problem.id} 
+                          <tr
+                            key={problem.id}
                             onClick={() => navigate(`/coding/problems/${problem.id}`)}
                             className="hover:bg-gray-50 transition-colors border-b border-gray-200 cursor-pointer"
                           >
@@ -665,8 +699,8 @@ function CodingProfile() {
                           </tr>
                         ))}
                         {activeTab === 'starred' && starredProblemsList.map((problem, index) => (
-                          <tr 
-                            key={problem.id} 
+                          <tr
+                            key={problem.id}
                             onClick={() => navigate(`/coding/problems/${problem.id}`)}
                             className="hover:bg-gray-50 transition-colors border-b border-gray-200 cursor-pointer"
                           >

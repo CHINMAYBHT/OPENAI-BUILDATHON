@@ -27,6 +27,7 @@ import SubmissionResults from './pages/SubmissionResults.jsx'
 // In Frontend/src/App.jsx, add these routes:
 import SubmissionHistory from './components/SubmissionHistory';
 import SubmissionDetails from './pages/SubmissionDetails';
+import InterviewSimulator from './pages/InterviewSimulator.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -34,7 +35,7 @@ createRoot(document.getElementById('root')).render(
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/login" element={<Login />} />
-        
+
         {/* Coding Routes */}
         <Route path="/coding" element={<CodingLanding />} />
         <Route path="/coding/problems" element={<CodingProblems />} />
@@ -58,8 +59,9 @@ createRoot(document.getElementById('root')).render(
         <Route path="/resume/ats-check" element={<ATSChecker />} />
         <Route path="/resume/templates" element={<ResumeTemplates />} />
         <Route path="/resume/skill-gap" element={<SkillGapAnalyzer />} />
-  <Route path="/coding/submissions" element={<SubmissionHistory />} />
-<Route path="/coding/submission/:submissionId" element={<SubmissionDetails />} />
+        <Route path="/coding/submissions" element={<SubmissionHistory />} />
+        <Route path="/coding/submission/:submissionId" element={<SubmissionDetails />} />
+        <Route path="/interview" element={<InterviewSimulator />} />
 
 
       </Routes>

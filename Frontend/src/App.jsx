@@ -9,14 +9,14 @@ import {
 } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { supabase } from './utils/supabase';
-import { 
-  faFileAlt, 
-  faBullseye, 
-  faBrain, 
-  faCode, 
-  faComments, 
-  faChartLine, 
-  faShieldAlt, 
+import {
+  faFileAlt,
+  faBullseye,
+  faBrain,
+  faCode,
+  faComments,
+  faChartLine,
+  faShieldAlt,
   faBolt,
   faCommentDots
 } from '@fortawesome/free-solid-svg-icons';
@@ -174,7 +174,7 @@ function App() {
             <div className="flex items-center">
               <span className="text-lg font-bold text-gray-800">Job Builder</span>
             </div>
-            
+
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center space-x-8">
               <a href="#home" className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium">Home</a>
@@ -183,15 +183,15 @@ function App() {
               <a href="#impact" className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium">Impact</a>
               <a href="#pricing" className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium">Pricing</a>
               {isLoggedIn ? (
-                <button 
+                <button
                   onClick={handleLogout}
                   className="bg-primary-500 hover:bg-primary-600 text-white px-5 py-2 rounded-lg font-semibold text-sm transition-all duration-300 inline-flex items-center"
                 >
                   Logout
                 </button>
               ) : (
-                <Link 
-                  to="/login" 
+                <Link
+                  to="/login"
                   className="bg-primary-500 hover:bg-primary-600 text-white px-5 py-2 rounded-lg font-semibold text-sm transition-all duration-300 inline-flex items-center"
                 >
                   Login
@@ -200,7 +200,7 @@ function App() {
             </div>
 
             {/* Mobile Menu Button */}
-            <button 
+            <button
               className="md:hidden p-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
@@ -219,15 +219,15 @@ function App() {
               <a href="#impact" className="block text-gray-600 hover:text-gray-900 transition-colors font-medium py-2">Impact</a>
               <a href="#pricing" className="block text-gray-600 hover:text-gray-900 transition-colors font-medium py-2">Pricing</a>
               {isLoggedIn ? (
-                <button 
+                <button
                   onClick={handleLogout}
                   className="w-full bg-primary-500 hover:bg-primary-600 text-white px-6 py-2.5 rounded-lg font-semibold block text-center"
                 >
                   Logout
                 </button>
               ) : (
-                <Link 
-                  to="/login" 
+                <Link
+                  to="/login"
                   className="w-full bg-primary-500 hover:bg-primary-600 text-white px-6 py-2.5 rounded-lg font-semibold block text-center"
                 >
                   Login
@@ -263,7 +263,7 @@ function App() {
 
               {/* Right Illustration */}
               <div className="relative flex justify-center lg:justify-end mr-10">
-                <img 
+                <img
                   src="/hero-illustration.png"
                   alt="Job Builder Platform Illustration"
                   className="w-full max-w-lg h-auto"
@@ -275,7 +275,7 @@ function App() {
             <div className={`grid lg:grid-cols-2 gap-16 items-center transition-transform duration-500 ease-in-out absolute inset-0 ${currentSlide === 1 ? 'translate-x-0' : currentSlide === 0 ? 'translate-x-full' : '-translate-x-full'}`}>
               {/* Left Content - Image */}
               <div className="relative flex justify-center lg:justify-start ml-20 ">
-                <img 
+                <img
                   src="/resume-builder.png"
                   alt="Resume Builder AI"
                   className="w-full max-w-lg h-auto"
@@ -303,14 +303,14 @@ function App() {
 
 
             {/* Navigation Arrows */}
-            <button 
+            <button
               onClick={prevSlide}
               className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-all duration-300 z-20"
               aria-label="Previous slide"
             >
               <ArrowRight className="w-5 h-5 text-gray-700 rotate-180" />
             </button>
-            <button 
+            <button
               onClick={nextSlide}
               className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-all duration-300 z-20"
               aria-label="Next slide"
@@ -321,12 +321,12 @@ function App() {
 
           {/* Carousel Dots */}
           <div className="flex justify-center items-center space-x-2 mt-5">
-            <button 
+            <button
               onClick={() => setCurrentSlide(0)}
               className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${currentSlide === 0 ? 'bg-primary-500 w-8' : 'bg-gray-300'}`}
               aria-label="Go to slide 1"
             />
-            <button 
+            <button
               onClick={() => setCurrentSlide(1)}
               className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${currentSlide === 1 ? 'bg-primary-500 w-8' : 'bg-gray-300'}`}
               aria-label="Go to slide 2"
@@ -349,14 +349,14 @@ function App() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <div 
+              <div
                 key={index}
                 className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:-translate-y-2"
               >
                 {/* Icon */}
                 <div className="w-16 h-16 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <FontAwesomeIcon 
-                    icon={feature.icon} 
+                  <FontAwesomeIcon
+                    icon={feature.icon}
                     className="text-3xl text-blue-500"
                   />
                 </div>
@@ -370,21 +370,26 @@ function App() {
                 <p className="text-xs text-gray-500 leading-relaxed mb-6">
                   {feature.description}
                 </p>
-                
+
                 {/* Learn More Button */}
                 {feature.title === "Coding Practice" ? (
                   <Link to="/coding" className="w-[70%] bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-3xl font-semibold text-sm transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg">
                     <span>{feature.title}</span>
                   </Link>
-                ) : feature.title === "AI Resume Builder" ? (
-                  <Link to="/resume" className="w-[70%] bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-3xl font-semibold text-sm transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg">
-                    <span>{feature.title}</span>
-                  </Link>
-                ) : (
-                  <button className="w-[70%] bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-3xl font-semibold text-sm transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg">
-                    <span>{feature.title}</span>
-                  </button>
-                )}
+                )
+                  : feature.title === "Interview Simulator" ? (
+                    <Link to="/interview" className="w-[70%] bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-3xl font-semibold text-sm transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg">
+                      <span>{feature.title}</span>
+                    </Link>
+                  ) : feature.title === "AI Resume Builder" ? (
+                    <Link to="/resume" className="w-[70%] bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-3xl font-semibold text-sm transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg">
+                      <span>{feature.title}</span>
+                    </Link>
+                  ) : (
+                    <button className="w-[70%] bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-3xl font-semibold text-sm transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg">
+                      <span>{feature.title}</span>
+                    </button>
+                  )}
               </div>
             ))}
           </div>
@@ -480,7 +485,7 @@ function App() {
             {/* Global Market - Image Left */}
             <div className="flex flex-col lg:flex-row items-center bg-[#f3f5f7e6] rounded-2xl overflow-hidden min-h-[500px]">
               <div className="lg:w-1/2 p-8 lg:p-3">
-                <img 
+                <img
                   src="/market-growth.png"
                   alt="Global Market Growth"
                   className="w-full h-48 lg:h-[50vh] object-contain rounded-xl"
@@ -495,7 +500,7 @@ function App() {
             {/* Talent Gap - Image Right */}
             <div className="flex flex-col lg:flex-row-reverse items-center bg-[#f4f9ff] rounded-2xl overflow-hidden min-h-[400px]">
               <div className="lg:w-1/2 p-8 lg:p-16">
-                <img 
+                <img
                   src="/talent-gap.png"
                   alt="Talent Gap Challenge"
                   className="w-full h-48 lg:h-[50vh] object-contain rounded-xl"
@@ -510,7 +515,7 @@ function App() {
             {/* ATS Challenges - Image Left */}
             <div className="flex flex-col lg:flex-row items-center bg-[#edf3f9] rounded-2xl overflow-hidden min-h-[400px]">
               <div className="lg:w-1/2 p-8 lg:p-16">
-                <img 
+                <img
                   src="/ats-challenges.png"
                   alt="ATS Filter Challenges"
                   className="w-full h-48 lg:h-[50vh] object-contain rounded-xl"
@@ -525,7 +530,7 @@ function App() {
             {/* AI Adoption - Image Right */}
             <div className="flex flex-col lg:flex-row-reverse items-center bg-[#edf4f9] rounded-2xl overflow-hidden min-h-[400px]">
               <div className="lg:w-1/2 p-8 lg:p-16">
-                <img 
+                <img
                   src="/ai-adoption.png"
                   alt="AI Adoption in Career Tools"
                   className="w-full h-48 lg:h-[50vh] object-contain rounded-xl"
@@ -541,7 +546,7 @@ function App() {
       </section>
 
       {/* Why Choose Job Builder Section */}
-        <section id="why" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+      <section id="why" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="text-center mb-20">

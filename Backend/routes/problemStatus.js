@@ -244,4 +244,46 @@ router.post('/save/:user_id/:problem_id', async (req, res) => {
     }
 });
 
+// Get bulk problem statuses for multiple problems
+router.post('/bulk', async (req, res) => {
+    const { user_id, problem_ids } = req.body;
+
+    if (!user_id || !problem_ids || !Array.isArray(problem_ids)) {
+        return res.status(400).json({ error: "Missing user_id or problem_ids array" });
+    }
+
+    try {
+        const { createClient } = await import('@supabase/supabase-js');
+        const supabaseUrl = process.env.SUPABASE_URL;
+        const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+        if (!supabaseUrl || !supabaseKey) {
+            console.error('Missing Supabase configuration');
+            return res.status(500).json({ error: "Database configuration missing" });
+        }
+
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        const { data, error } = await supabase
+            .from('user_problem_status')
+            .select('*')
+            .eq('user_id', user_id)
+            .in('problem_id', problem_ids);
+
+        if (error) {
+            console.error("Error fetching bulk statuses:", error);
+            return res.status(500).json({ error: "Failed to fetch statuses", details: error.message });
+        }
+
+        return res.json({
+            success: true,
+            statuses: data || []
+        });
+
+    } catch (err) {
+        console.error("Bulk status fetch error:", err);
+        return res.status(500).json({ error: String(err) });
+    }
+});
+
 export default router;

@@ -552,6 +552,93 @@ Provide comprehensive analysis in the specified JSON format.
       .update({ submission_id: submission.id })
       .eq('id', aiReviewRecord.id);
 
+    // Update user_languages table
+    const isSolved = final_status === 'success';
+    try {
+      const { data: existingLang } = await supabase
+        .from('user_languages')
+        .select('*')
+        .eq('user_id', user_id)
+        .eq('language', language)
+        .single();
+
+      if (existingLang) {
+        // Update existing record - only increment if solved
+        const newCount = isSolved ? (existingLang.solved_count || 0) + 1 : (existingLang.solved_count || 0);
+        await supabase
+          .from('user_languages')
+          .update({ solved_count: newCount })
+          .eq('user_id', user_id)
+          .eq('language', language);
+      } else {
+        // Insert new record
+        await supabase
+          .from('user_languages')
+          .insert({
+            user_id: user_id,
+            language: language,
+            solved_count: isSolved ? 1 : 0
+          });
+      }
+    } catch (langError) {
+      console.error("Error updating user_languages:", langError);
+      // Don't fail the submission if language tracking fails
+    }
+
+    // Update user streak if submission was successful
+    if (isSolved) {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const { data: existingStreak } = await supabase
+          .from('user_streaks')
+          .select('*')
+          .eq('user_id', user_id)
+          .single();
+
+        let newCurrentStreak = 1;
+        let newLongestStreak = 1;
+
+        if (existingStreak) {
+          const lastSolvedDate = existingStreak.last_solved_at;
+
+          if (lastSolvedDate !== today) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+            if (lastSolvedDate === yesterdayStr) {
+              newCurrentStreak = (existingStreak.current_streak || 0) + 1;
+            } else {
+              newCurrentStreak = 1;
+            }
+
+            newLongestStreak = Math.max(newCurrentStreak, existingStreak.longest_streak || 0);
+
+            await supabase
+              .from('user_streaks')
+              .upsert({
+                user_id: user_id,
+                current_streak: newCurrentStreak,
+                longest_streak: newLongestStreak,
+                last_solved_at: today
+              }, { onConflict: 'user_id' });
+          }
+        } else {
+          await supabase
+            .from('user_streaks')
+            .insert({
+              user_id: user_id,
+              current_streak: 1,
+              longest_streak: 1,
+              last_solved_at: today
+            });
+        }
+      } catch (streakError) {
+        console.error("Error updating user_streaks:", streakError);
+        // Don't fail the submission if streak tracking fails
+      }
+    }
+
     // Save test results if provided
     if (test_results && Array.isArray(test_results)) {
       const submissionResults = test_results.map(result => ({
@@ -625,6 +712,93 @@ router.post('/save-submission', async (req, res) => {
     if (submissionError) {
       console.error("Error saving submission:", submissionError);
       return res.status(500).json({ error: "Failed to save submission", details: submissionError.message });
+    }
+
+    // Update user_languages table
+    const isSolved = final_status === 'success';
+    try {
+      const { data: existingLang } = await supabase
+        .from('user_languages')
+        .select('*')
+        .eq('user_id', user_id)
+        .eq('language', language)
+        .single();
+
+      if (existingLang) {
+        // Update existing record - only increment if solved
+        const newCount = isSolved ? (existingLang.solved_count || 0) + 1 : (existingLang.solved_count || 0);
+        await supabase
+          .from('user_languages')
+          .update({ solved_count: newCount })
+          .eq('user_id', user_id)
+          .eq('language', language);
+      } else {
+        // Insert new record
+        await supabase
+          .from('user_languages')
+          .insert({
+            user_id: user_id,
+            language: language,
+            solved_count: isSolved ? 1 : 0
+          });
+      }
+    } catch (langError) {
+      console.error("Error updating user_languages:", langError);
+      // Don't fail the submission if language tracking fails
+    }
+
+    // Update user streak if submission was successful
+    if (isSolved) {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const { data: existingStreak } = await supabase
+          .from('user_streaks')
+          .select('*')
+          .eq('user_id', user_id)
+          .single();
+
+        let newCurrentStreak = 1;
+        let newLongestStreak = 1;
+
+        if (existingStreak) {
+          const lastSolvedDate = existingStreak.last_solved_at;
+
+          if (lastSolvedDate !== today) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+            if (lastSolvedDate === yesterdayStr) {
+              newCurrentStreak = (existingStreak.current_streak || 0) + 1;
+            } else {
+              newCurrentStreak = 1;
+            }
+
+            newLongestStreak = Math.max(newCurrentStreak, existingStreak.longest_streak || 0);
+
+            await supabase
+              .from('user_streaks')
+              .upsert({
+                user_id: user_id,
+                current_streak: newCurrentStreak,
+                longest_streak: newLongestStreak,
+                last_solved_at: today
+              }, { onConflict: 'user_id' });
+          }
+        } else {
+          await supabase
+            .from('user_streaks')
+            .insert({
+              user_id: user_id,
+              current_streak: 1,
+              longest_streak: 1,
+              last_solved_at: today
+            });
+        }
+      } catch (streakError) {
+        console.error("Error updating user_streaks:", streakError);
+        // Don't fail the submission if streak tracking fails
+      }
     }
 
     // If test results provided, save them

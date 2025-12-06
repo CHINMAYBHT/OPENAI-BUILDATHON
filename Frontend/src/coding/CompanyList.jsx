@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { supabase } from '../utils/supabase';
 import {
   faBuilding,
   faArrowLeft,
@@ -30,6 +31,7 @@ function CompanyList() {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [companyProgressMap, setCompanyProgressMap] = useState({});
 
   const filterRef = useRef(null);
   const sortRef = useRef(null);
@@ -80,6 +82,38 @@ function CompanyList() {
 
     fetchCompanies();
   }, [apiBase]);
+
+  // Fetch user's progress for all companies
+  useEffect(() => {
+    const fetchUserProgress = async () => {
+      if (companies.length === 0) return;
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) return;
+
+        const userId = session.user.id;
+
+        // Fetch all user_company_progress records for this user
+        const { data, error } = await supabase
+          .from('user_company_progress')
+          .select('*')
+          .eq('user_id', userId);
+
+        if (!error && data) {
+          const progressMap = {};
+          data.forEach(progress => {
+            progressMap[progress.company_id] = progress;
+          });
+          setCompanyProgressMap(progressMap);
+        }
+      } catch (err) {
+        console.error('Error fetching user progress:', err);
+      }
+    };
+
+    fetchUserProgress();
+  }, [companies]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -458,18 +492,24 @@ function CompanyList() {
 
                   {/* Difficulty Distribution */}
                   <div className="mb-4">
-                    <div className="text-sm font-medium text-gray-700 mb-2">Difficulty Distribution</div>
+                    <div className="text-sm font-medium text-gray-700 mb-2">Your Progress</div>
                     <div className="grid grid-cols-3 gap-2">
                       <div className={`px-2 py-1 rounded text-center ${getDifficultyColor('easy')}`}>
-                        <div className="text-base font-bold">{company.difficulty?.easy || 0}</div>
+                        <div className="text-base font-bold">
+                          {companyProgressMap[company.id]?.solved_easy || 0} / {company.difficulty?.easy || 0}
+                        </div>
                         <div className="text-sm">Easy</div>
                       </div>
                       <div className={`px-2 py-1 rounded text-center ${getDifficultyColor('medium')}`}>
-                        <div className="text-base font-bold">{company.difficulty?.medium || 0}</div>
+                        <div className="text-base font-bold">
+                          {companyProgressMap[company.id]?.solved_medium || 0} / {company.difficulty?.medium || 0}
+                        </div>
                         <div className="text-sm">Medium</div>
                       </div>
                       <div className={`px-2 py-1 rounded text-center ${getDifficultyColor('hard')}`}>
-                        <div className="text-base font-bold">{company.difficulty?.hard || 0}</div>
+                        <div className="text-base font-bold">
+                          {companyProgressMap[company.id]?.solved_hard || 0} / {company.difficulty?.hard || 0}
+                        </div>
                         <div className="text-sm">Hard</div>
                       </div>
                     </div>

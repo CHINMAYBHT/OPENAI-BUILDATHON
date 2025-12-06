@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { supabase } from '../utils/supabase';
 import {
   faArrowLeft,
   faSearch,
@@ -45,6 +46,8 @@ function CompanyQuestions() {
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [problemStatuses, setProblemStatuses] = useState({});
+  const [companyProgress, setCompanyProgress] = useState(null);
 
   const filterRef = useRef(null);
   const sortRef = useRef(null);
@@ -85,14 +88,147 @@ function CompanyQuestions() {
     }
   }, [companyName, apiBase]);
 
-  // Get user's progress from problems
-  const userProgress = useMemo(() => {
-    return {
-      solved: 0,  // This would come from user_problem_status table
-      attempted: 0,
-      total: problems.length
+  // Fetch user problem statuses
+  useEffect(() => {
+    const fetchProblemStatuses = async () => {
+      if (problems.length === 0 || !currentCompany) return;
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) return;
+
+        const userId = session.user.id;
+        const problemIds = problems.map(p => p.id);
+
+        const response = await fetch(`${apiBase}/api/problem-status/bulk`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ user_id: userId, problem_ids: problemIds })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const statusMap = {};
+          data.statuses?.forEach(status => {
+            statusMap[status.problem_id] = status;
+          });
+          setProblemStatuses(statusMap);
+
+          // Sync company progress after getting statuses
+          const syncResponse = await fetch(`${apiBase}/api/company-progress/sync`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({ user_id: userId, company_id: currentCompany.id })
+          });
+
+          if (syncResponse.ok) {
+            const syncData = await syncResponse.json();
+            setCompanyProgress(syncData.progress);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching problem statuses:', err);
+      }
     };
-  }, [problems]);
+
+    fetchProblemStatuses();
+  }, [problems, currentCompany, apiBase]);
+
+  // Listen for problem status updates and re-sync company progress
+  useEffect(() => {
+    const handleStatusUpdate = async (event) => {
+      const { problemId, newStatus } = event.detail;
+
+      // Update local status map
+      setProblemStatuses(prev => ({
+        ...prev,
+        [problemId]: { ...prev[problemId], status: newStatus }
+      }));
+
+      // Re-sync company progress if user is logged in and company is loaded
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user || !currentCompany) return;
+
+        const syncResponse = await fetch(`${apiBase}/api/company-progress/sync`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            user_id: session.user.id,
+            company_id: currentCompany.id
+          })
+        });
+
+        if (syncResponse.ok) {
+          const syncData = await syncResponse.json();
+          setCompanyProgress(syncData.progress);
+        }
+      } catch (err) {
+        console.error('Error syncing company progress:', err);
+      }
+    };
+
+    window.addEventListener('problemStatusUpdated', handleStatusUpdate);
+    return () => window.removeEventListener('problemStatusUpdated', handleStatusUpdate);
+  }, [currentCompany, apiBase]);
+
+  // Get user's progress from problems or company_progress table
+  const userProgress = useMemo(() => {
+    // If we have company progress from DB, use it
+    if (companyProgress) {
+      return {
+        solved: companyProgress.solved_total,
+        attempted: 0, // This would need to be added to the table if needed
+        total: companyProgress.total_questions,
+        easySolved: companyProgress.solved_easy,
+        mediumSolved: companyProgress.solved_medium,
+        hardSolved: companyProgress.solved_hard,
+        totalEasy: companyProgress.total_easy,
+        totalMedium: companyProgress.total_medium,
+        totalHard: companyProgress.total_hard
+      };
+    }
+
+    // Fallback: Calculate from problemStatuses
+    const solved = problems.filter(p => problemStatuses[p.id]?.status === 'solved').length;
+    const attempted = problems.filter(p => problemStatuses[p.id]?.status === 'attempted').length;
+
+    // Count by difficulty
+    const easySolved = problems.filter(p =>
+      p.difficulty.toLowerCase() === 'easy' && problemStatuses[p.id]?.status === 'solved'
+    ).length;
+    const mediumSolved = problems.filter(p =>
+      p.difficulty.toLowerCase() === 'medium' && problemStatuses[p.id]?.status === 'solved'
+    ).length;
+    const hardSolved = problems.filter(p =>
+      p.difficulty.toLowerCase() === 'hard' && problemStatuses[p.id]?.status === 'solved'
+    ).length;
+
+    const totalEasy = problems.filter(p => p.difficulty.toLowerCase() === 'easy').length;
+    const totalMedium = problems.filter(p => p.difficulty.toLowerCase() === 'medium').length;
+    const totalHard = problems.filter(p => p.difficulty.toLowerCase() === 'hard').length;
+
+    return {
+      solved,
+      attempted,
+      total: problems.length,
+      easySolved,
+      mediumSolved,
+      hardSolved,
+      totalEasy,
+      totalMedium,
+      totalHard
+    };
+  }, [problems, problemStatuses, companyProgress]);
 
   // Filter and sort questions
   const filteredAndSortedQuestions = useMemo(() => {
@@ -280,9 +416,9 @@ function CompanyQuestions() {
                   <div className="absolute -top-4 -right-4 w-16 h-16 bg-blue-200 rounded-full opacity-50"></div>
                   <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-cyan-200 rounded-full opacity-30"></div>
                   <div className="relative z-10">
-                    <h3 className="text-3xl font-bold text-gray-800 mb-2">{currentCompany.totalQuestions}</h3>
-                    <p className="text-gray-600 mb-4">Total Questions</p>
-                    <div className="text-xs text-gray-500">{Math.round((userProgress.solved / userProgress.total) * 100)}% Solved</div>
+                    <h3 className="text-3xl font-bold text-gray-800 mb-2">{userProgress.solved} / {userProgress.total}</h3>
+                    <p className="text-gray-600 mb-4">Solved / Total</p>
+                    <div className="text-xs text-gray-500">{userProgress.total > 0 ? Math.round((userProgress.solved / userProgress.total) * 100) : 0}% Complete</div>
                   </div>
                 </div>
 
@@ -294,9 +430,9 @@ function CompanyQuestions() {
                   <div className="absolute -top-4 -right-4 w-16 h-16 bg-green-200 rounded-full opacity-50"></div>
                   <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-teal-200 rounded-full opacity-30"></div>
                   <div className="relative z-10">
-                    <h3 className="text-3xl font-bold text-gray-800 mb-2">{currentCompany.difficulty.easy}</h3>
-                    <p className="text-gray-600 mb-4">Easy Questions</p>
-                    <div className="text-xs text-gray-500">Good for beginners</div>
+                    <h3 className="text-3xl font-bold text-gray-800 mb-2">{userProgress.easySolved} / {currentCompany.difficulty?.easy || 0}</h3>
+                    <p className="text-gray-600 mb-4">Easy Solved</p>
+                    <div className="text-xs text-gray-500">{currentCompany.difficulty?.easy ? Math.round((userProgress.easySolved / currentCompany.difficulty.easy) * 100) : 0}% Complete</div>
                   </div>
                 </div>
 
@@ -308,9 +444,9 @@ function CompanyQuestions() {
                   <div className="absolute -top-4 -right-4 w-16 h-16 bg-yellow-200 rounded-full opacity-50"></div>
                   <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-orange-200 rounded-full opacity-30"></div>
                   <div className="relative z-10">
-                    <h3 className="text-3xl font-bold text-gray-800 mb-2">{currentCompany.difficulty.medium}</h3>
-                    <p className="text-gray-600 mb-4">Medium Questions</p>
-                    <div className="text-xs text-gray-500">Most common difficulty</div>
+                    <h3 className="text-3xl font-bold text-gray-800 mb-2">{userProgress.mediumSolved} / {currentCompany.difficulty?.medium || 0}</h3>
+                    <p className="text-gray-600 mb-4">Medium Solved</p>
+                    <div className="text-xs text-gray-500">{currentCompany.difficulty?.medium ? Math.round((userProgress.mediumSolved / currentCompany.difficulty.medium) * 100) : 0}% Complete</div>
                   </div>
                 </div>
 
@@ -322,9 +458,9 @@ function CompanyQuestions() {
                   <div className="absolute -top-4 -right-4 w-16 h-16 bg-red-200 rounded-full opacity-50"></div>
                   <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-pink-200 rounded-full opacity-30"></div>
                   <div className="relative z-10">
-                    <h3 className="text-3xl font-bold text-gray-800 mb-2">{currentCompany.difficulty.hard}</h3>
-                    <p className="text-gray-600 mb-4">Hard Questions</p>
-                    <div className="text-xs text-gray-500">Advanced challenges</div>
+                    <h3 className="text-3xl font-bold text-gray-800 mb-2">{userProgress.hardSolved} / {currentCompany.difficulty?.hard || 0}</h3>
+                    <p className="text-gray-600 mb-4">Hard Solved</p>
+                    <div className="text-xs text-gray-500">{currentCompany.difficulty?.hard ? Math.round((userProgress.hardSolved / currentCompany.difficulty.hard) * 100) : 0}% Complete</div>
                   </div>
                 </div>
               </div>
@@ -546,20 +682,27 @@ function CompanyQuestions() {
                     </thead>
                     <tbody className="bg-transparent">
                       {filteredAndSortedQuestions.map((problem) => (
-                        <tr key={problem.id} className="hover:bg-gray-50 transition-colors cursor-pointer">
+                        <tr
+                          key={problem.id}
+                          className="hover:bg-gray-50 transition-colors cursor-pointer"
+                          onClick={() => window.location.href = `/coding/problem/${problem.slug}`}
+                        >
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {problem.problemNumber}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
+                            {problemStatuses[problem.id]?.status === 'solved' ? (
+                              <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                <FontAwesomeIcon icon={faCheck} className="text-white text-xs" />
+                              </div>
+                            ) : (
+                              <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
+                            )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <Link
-                              to={`/coding/problem/${problem.slug}`}
-                              className="text-sm font-medium text-gray-900 hover:text-blue-600 transition-colors cursor-pointer"
-                            >
+                            <span className="text-sm font-medium text-gray-900">
                               {problem.title}
-                            </Link>
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`text-sm font-semibold ${getDifficultyColor(problem.difficulty.toLowerCase())}`}>
