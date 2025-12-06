@@ -23,22 +23,22 @@ const corsOptions = {
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
-        
+
         // Allow localhost for development
         if (origin.includes('localhost')) {
             return callback(null, true);
         }
-        
+
         // Allow any vercel.app domain (production and preview deployments)
         if (origin.endsWith('.vercel.app')) {
             return callback(null, true);
         }
-        
+
         // Allow custom frontend URL if set
         if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) {
             return callback(null, true);
         }
-        
+
         // Reject all other origins
         callback(new Error('Not allowed by CORS'));
     },
@@ -69,5 +69,27 @@ app.get('/', (req, res) => {
     res.json({ status: 'OK', message: 'Job Helper API is running' });
 });
 
+// 404 handler for debugging
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        message: 'Route not found',
+        requestedUrl: req.originalUrl,
+        method: req.method,
+        availableRoutes: [
+            'POST /api/auth/login',
+            'POST /api/auth/signup',
+            'GET /'
+        ]
+    });
+});
+
 // Export the Express app for Vercel serverless
 export default app;
+
+// Start server if not in serverless environment
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
