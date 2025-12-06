@@ -1,11 +1,8 @@
 import express from 'express';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import axios from 'axios';
-import multer from 'multer';
-import { PDFParse } from 'pdf-parse';
 
 const router = express.Router();
-const upload = multer();
 
 // ElevenLabs TTS helper
 // Uses env:
