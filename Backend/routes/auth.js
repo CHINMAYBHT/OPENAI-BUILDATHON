@@ -1,6 +1,6 @@
 import express from 'express';
-import { createUser, authenticateUser } from '../../Database/supabaseAuth.js';
-import supabase from '../../Database/supabaseClient.js';
+import { createUser, authenticateUser } from '../config/supabaseAuth.js';
+import supabase from '../config/supabase.js';
 
 const router = express.Router();
 
