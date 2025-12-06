@@ -2104,7 +2104,7 @@ Try going through the problem requirements again and see if you're missing anyth
                         );
                       })
                     ) : (
-                      <div className="text-gray-500 text-green-400">Console output will appear here...</div>
+                      <div className="text-green-400">Console output will appear here...</div>
                     )}
                   </div>
                 </div>

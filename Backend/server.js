@@ -1,7 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import { connectDB } from '../Database/connection.js';
 import authRoutes from './routes/auth.js';
 import geminiRoutes from './routes/gemini.js';
 import problemStatusRoutes from './routes/problemStatus.js';
@@ -13,7 +12,8 @@ import userStatsRoutes from './routes/userStats.js';
 import userActivityRoutes from './routes/userActivity.js';
 import interviewRoutes from './routes/interviewSimulator.js';
 
-dotenv.config({ path: '../.env' });
+// Load environment variables (Vercel handles this automatically)
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -42,10 +42,10 @@ app.use('/api/user-stats', userStatsRoutes);
 app.use('/api/user-activity', userActivityRoutes);
 app.use('/api/interview', interviewRoutes);
 
-await connectDB();
-
-
-
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// Health check endpoint
+app.get('/', (req, res) => {
+    res.json({ status: 'OK', message: 'Job Helper API is running' });
 });
+
+// Export the Express app for Vercel serverless
+export default app;
