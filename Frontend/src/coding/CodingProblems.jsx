@@ -375,7 +375,7 @@ function CodingProblems() {
               All <span className="gradient-text">Coding Problems</span>
             </h1>
             <p className="text-xl text-gray-600">
-              Practice from our collection of 500+ coding interview questions
+              Practice from our collection of coding interview questions
             </p>
           </div>
 

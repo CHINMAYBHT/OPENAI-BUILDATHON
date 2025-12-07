@@ -62,7 +62,7 @@ function CodingLanding() {
               Master <span className="gradient-text">Coding Interviews</span>
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Practice 500+ coding problems, track your progress, and ace your technical interviews with AI-powered guidance
+              Practice coding problems, track your progress, and ace your technical interviews with AI-powered guidance
             </p>
           </div>
 
